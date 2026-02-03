@@ -1,0 +1,57 @@
+{
+    "name": "Service",
+    "type": "object",
+    "properties": {
+        "title": {
+            "type": "string",
+            "description": "Service name"
+        },
+        "title_hindi": {
+            "type": "string",
+            "description": "Service name in Hindi"
+        },
+        "description": {
+            "type": "string",
+            "description": "Service description"
+        },
+        "description_hindi": {
+            "type": "string",
+            "description": "Service description in Hindi"
+        },
+        "icon": {
+            "type": "string",
+            "description": "Lucide icon name"
+        },
+        "price_starting": {
+            "type": "number",
+            "description": "Starting price in INR"
+        },
+        "features": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of features included"
+        },
+        "image_url": {
+            "type": "string",
+            "description": "Service image URL"
+        },
+        "is_featured": {
+            "type": "boolean",
+            "default": false
+        },
+        "order": {
+            "type": "number",
+            "default": 0
+        },
+        "is_active": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "required": [
+        "title",
+        "description"
+    ]
+}

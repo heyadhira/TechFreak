@@ -1,0 +1,71 @@
+{
+    "name": "Lead",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "phone": {
+            "type": "string"
+        },
+        "company": {
+            "type": "string"
+        },
+        "service_interested": {
+            "type": "string"
+        },
+        "budget": {
+            "type": "string",
+            "enum": [
+                "under-10k",
+                "10k-25k",
+                "25k-50k",
+                "50k-1lakh",
+                "above-1lakh"
+            ]
+        },
+        "message": {
+            "type": "string"
+        },
+        "source": {
+            "type": "string",
+            "enum": [
+                "contact-form",
+                "whatsapp",
+                "phone",
+                "email",
+                "referral",
+                "other"
+            ],
+            "default": "contact-form"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "new",
+                "contacted",
+                "qualified",
+                "proposal-sent",
+                "negotiation",
+                "won",
+                "lost"
+            ],
+            "default": "new"
+        },
+        "notes": {
+            "type": "string"
+        },
+        "is_read": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "email",
+        "message"
+    ]
+}

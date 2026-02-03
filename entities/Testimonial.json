@@ -1,0 +1,46 @@
+// This file exists in your Base44 app
+// Path: entities/Testimonial
+// Please copy from your Base44 dashboard
+{
+    "name": "Testimonial",
+    "type": "object",
+    "properties": {
+        "client_name": {
+            "type": "string"
+        },
+        "client_designation": {
+            "type": "string"
+        },
+        "company": {
+            "type": "string"
+        },
+        "photo_url": {
+            "type": "string"
+        },
+        "content": {
+            "type": "string",
+            "description": "Testimonial text"
+        },
+        "rating": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 5,
+            "default": 5
+        },
+        "project_type": {
+            "type": "string"
+        },
+        "is_featured": {
+            "type": "boolean",
+            "default": false
+        },
+        "is_active": {
+            "type": "boolean",
+            "default": true
+        }
+    },
+    "required": [
+        "client_name",
+        "content"
+    ]
+}
