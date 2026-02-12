@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowRight, Code2, Globe, Zap, Sparkles, Rocket } from 'lucide-react';
@@ -7,8 +7,44 @@ import GradientButton from '../ui/GradientButton';
 import FloatingIcon from '../ui/FloatingIcon';
 
 export default function HeroSection() {
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+
+    const springConfig = { damping: 25, stiffness: 150 };
+    const spotlightX = useSpring(mouseX, springConfig);
+    const spotlightY = useSpring(mouseY, springConfig);
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            mouseX.set(e.clientX);
+            mouseY.set(e.clientY);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [mouseX, mouseY]);
+
     return (
-        <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950">
+        <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 group">
+            {/* Spotlight effect */}
+            <motion.div
+                className="pointer-events-none absolute -inset-px z-30 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                style={{
+                    background: `radial-gradient(600px circle at ${spotlightX}px ${spotlightY}px, rgba(99, 102, 241, 0.15), transparent 80%)`,
+                }}
+            />
+
+            {/* Mouse following glow */}
+            <motion.div
+                className="pointer-events-none absolute inset-0 z-0 bg-blue-500/5 blur-[120px]"
+                style={{
+                    left: spotlightX,
+                    top: spotlightY,
+                    width: '400px',
+                    height: '400px',
+                    transform: 'translate(-50%, -50%)',
+                }}
+            />
+
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
@@ -63,7 +99,7 @@ export default function HeroSection() {
                         className="text-lg md:text-xl text-white/70 mb-8 max-w-2xl mx-auto leading-relaxed"
                     >
                         Transform your business with stunning, high-performance websites.
-                        Best quality at the best price — trusted by 500+ Indian businesses.
+                        Best quality at the best price — trusted by 150+ Indian businesses.
                     </motion.p>
 
                     {/* CTA Buttons */}
@@ -94,9 +130,9 @@ export default function HeroSection() {
                         className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto"
                     >
                         {[
-                            { value: "500+", label: "Projects Delivered" },
+                            { value: "150+", label: "Projects Delivered" },
                             { value: "98%", label: "Client Satisfaction" },
-                            { value: "5+", label: "Years Experience" },
+                            { value: "2+", label: "Years Experience" },
                             { value: "24/7", label: "Support Available" }
                         ].map((stat, i) => (
                             <div key={i} className="text-center">
@@ -109,7 +145,7 @@ export default function HeroSection() {
             </div>
 
             {/* Bottom gradient */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white dark:from-slate-950 to-transparent" />
         </section>
     );
 }

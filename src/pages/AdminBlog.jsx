@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Plus, Pencil, Trash2, Loader2, Upload, X, Eye } from 'lucide-react';
+import { localClient } from '@/api/localClient';
+import { Plus, Pencil, Trash2, Loader2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,14 +28,15 @@ export default function AdminBlog() {
 
     const queryClient = useQueryClient();
 
-    const { data: posts, isLoading } = useQuery({
+    const { data: postsData, isLoading } = useQuery({
         queryKey: ['admin-posts'],
-        queryFn: () => base44.entities.BlogPost.list('-created_date'),
-        initialData: []
+        queryFn: () => localClient.get('/posts'),
     });
 
+    const posts = postsData || [];
+
     const createMutation = useMutation({
-        mutationFn: (data) => base44.entities.BlogPost.create(data),
+        mutationFn: (data) => localClient.post('/posts', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
             setIsOpen(false);
@@ -45,7 +46,7 @@ export default function AdminBlog() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }) => base44.entities.BlogPost.update(id, data),
+        mutationFn: ({ id, data }) => localClient.put(`/posts/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
             setIsOpen(false);
@@ -55,7 +56,7 @@ export default function AdminBlog() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id) => base44.entities.BlogPost.delete(id),
+        mutationFn: (id) => localClient.delete(`/posts/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
             toast.success('Post deleted successfully');
@@ -107,9 +108,20 @@ export default function AdminBlog() {
         if (!file) return;
 
         setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({ ...prev, featured_image: file_url }));
-        setUploading(false);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'blog');
+
+        try {
+            const response = await localClient.post('/upload', formData);
+            setFormData(prev => ({ ...prev, featured_image: response.url }));
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            console.error('Upload failed:', error);
+            toast.error('Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const addTag = () => {
@@ -125,9 +137,9 @@ export default function AdminBlog() {
 
     return (
         <AdminLayout currentPage="AdminBlog" title="Manage Blog Posts">
-            <div className="bg-white rounded-2xl shadow-sm">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <p className="text-slate-600">Create and manage blog content</p>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <p className="text-slate-600 dark:text-slate-400">Create and manage blog content</p>
                     <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) resetForm(); }}>
                         <DialogTrigger asChild>
                             <Button className="bg-indigo-600 hover:bg-indigo-700">
@@ -245,9 +257,9 @@ export default function AdminBlog() {
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {formData.tags.map((tag, i) => (
-                                            <span key={i} className="px-3 py-1 bg-slate-100 rounded-full text-sm flex items-center gap-2">
+                                            <span key={i} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-sm flex items-center gap-2">
                                                 {tag}
-                                                <button type="button" onClick={() => removeTag(i)} className="text-slate-500 hover:text-red-500">×</button>
+                                                <button type="button" onClick={() => removeTag(i)} className="text-slate-500 dark:text-slate-400 hover:text-red-500">×</button>
                                             </span>
                                         ))}
                                     </div>
@@ -282,44 +294,44 @@ export default function AdminBlog() {
 
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-slate-50">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Title</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Category</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Author</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase">Actions</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Author</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {isLoading ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></td></tr>
                             ) : posts.length === 0 ? (
                                 <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500">No posts yet. Write your first blog post.</td></tr>
                             ) : (
                                 posts.map((post) => (
-                                    <tr key={post.id}>
+                                    <tr key={post.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 {post.featured_image && (
                                                     <img src={post.featured_image} alt="" className="w-12 h-8 object-cover rounded" />
                                                 )}
                                                 <div>
-                                                    <p className="font-medium text-slate-900">{post.title}</p>
-                                                    <p className="text-xs text-slate-500">{post.slug}</p>
+                                                    <p className="font-medium text-slate-900 dark:text-white">{post.title}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400">{post.slug}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-600 capitalize text-sm">{post.category?.replace('-', ' ')}</td>
-                                        <td className="px-6 py-4 text-slate-600 text-sm">{post.author_name || '-'}</td>
+                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400 capitalize text-sm">{post.category?.replace('-', ' ')}</td>
+                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">{post.author_name || '-'}</td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${post.is_published ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                                                 {post.is_published ? 'Published' : 'Draft'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-slate-600 text-sm">
-                                            {post.created_date && format(new Date(post.created_date), 'MMM d, yyyy')}
+                                        <td className="px-6 py-4 text-slate-600 dark:text-slate-400 text-sm">
+                                            {post.created_at && format(new Date(post.created_at), 'MMM d, yyyy')}
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex gap-2">

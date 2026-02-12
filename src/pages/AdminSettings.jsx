@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Save, Loader2, Globe, Search, Phone, MapPin } from 'lucide-react';
+import { localClient } from '@/api/localClient';
+import { Save, Loader2, Search, Phone, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,11 +31,12 @@ export default function AdminSettings() {
 
     const queryClient = useQueryClient();
 
-    const { data: savedSettings, isLoading } = useQuery({
+    const { data: savedSettingsResponse, isLoading } = useQuery({
         queryKey: ['site-settings'],
-        queryFn: () => base44.entities.SiteSettings.list(),
-        initialData: []
+        queryFn: () => localClient.get('/settings'),
     });
+
+    const savedSettings = savedSettingsResponse?.data || [];
 
     useEffect(() => {
         if (savedSettings.length > 0) {
@@ -52,22 +53,7 @@ export default function AdminSettings() {
     }, [savedSettings]);
 
     const saveMutation = useMutation({
-        mutationFn: async (data) => {
-            for (const [key, value] of Object.entries(data)) {
-                const existing = savedSettings.find(s => s.setting_key === key);
-                const settingValue = typeof value === 'object' ? JSON.stringify(value) : value;
-
-                if (existing) {
-                    await base44.entities.SiteSettings.update(existing.id, { setting_value: settingValue });
-                } else {
-                    await base44.entities.SiteSettings.create({
-                        setting_key: key,
-                        setting_value: settingValue,
-                        setting_type: 'general'
-                    });
-                }
-            }
-        },
+        mutationFn: (data) => localClient.post('/settings', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['site-settings'] });
             toast.success('Settings saved successfully');
@@ -90,27 +76,27 @@ export default function AdminSettings() {
 
     return (
         <AdminLayout currentPage="AdminSettings" title="Settings">
-            <div className="bg-white rounded-2xl shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <Tabs defaultValue="general" className="p-6">
-                    <TabsList className="mb-6">
-                        <TabsTrigger value="general">General</TabsTrigger>
-                        <TabsTrigger value="contact">Contact</TabsTrigger>
-                        <TabsTrigger value="seo">SEO</TabsTrigger>
-                        <TabsTrigger value="social">Social Media</TabsTrigger>
-                        <TabsTrigger value="hero">Hero Section</TabsTrigger>
+                    <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                        <TabsTrigger value="general" className="rounded-lg dark:text-slate-400 dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white">General</TabsTrigger>
+                        <TabsTrigger value="contact" className="rounded-lg dark:text-slate-400 dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white">Contact</TabsTrigger>
+                        <TabsTrigger value="seo" className="rounded-lg dark:text-slate-400 dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white">SEO</TabsTrigger>
+                        <TabsTrigger value="social" className="rounded-lg dark:text-slate-400 dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white">Social Media</TabsTrigger>
+                        <TabsTrigger value="hero" className="rounded-lg dark:text-slate-400 dark:data-[state=active]:bg-slate-900 dark:data-[state=active]:text-white">Hero Section</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="general" className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Site Name</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Site Name</label>
                                 <Input
                                     value={settings.site_name}
                                     onChange={(e) => setSettings(prev => ({ ...prev, site_name: e.target.value }))}
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Tagline</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Tagline</label>
                                 <Input
                                     value={settings.tagline}
                                     onChange={(e) => setSettings(prev => ({ ...prev, tagline: e.target.value }))}
@@ -122,7 +108,7 @@ export default function AdminSettings() {
                     <TabsContent value="contact" className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
                                     <Phone className="w-4 h-4 inline mr-1" /> Phone Number
                                 </label>
                                 <Input
@@ -131,7 +117,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Email</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Email</label>
                                 <Input
                                     type="email"
                                     value={settings.email}
@@ -139,7 +125,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">WhatsApp Number</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">WhatsApp Number</label>
                                 <Input
                                     value={settings.whatsapp}
                                     onChange={(e) => setSettings(prev => ({ ...prev, whatsapp: e.target.value }))}
@@ -147,7 +133,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
                                     <MapPin className="w-4 h-4 inline mr-1" /> Address
                                 </label>
                                 <Input
@@ -160,30 +146,30 @@ export default function AdminSettings() {
 
                     <TabsContent value="seo" className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">
                                 <Search className="w-4 h-4 inline mr-1" /> Meta Title
                             </label>
                             <Input
                                 value={settings.meta_title}
                                 onChange={(e) => setSettings(prev => ({ ...prev, meta_title: e.target.value }))}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Recommended: 50-60 characters</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Recommended: 50-60 characters</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Meta Description</label>
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Meta Description</label>
                             <Textarea
                                 value={settings.meta_description}
                                 onChange={(e) => setSettings(prev => ({ ...prev, meta_description: e.target.value }))}
                                 rows={3}
                             />
-                            <p className="text-xs text-slate-500 mt-1">Recommended: 150-160 characters</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Recommended: 150-160 characters</p>
                         </div>
                     </TabsContent>
 
                     <TabsContent value="social" className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Facebook URL</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Facebook URL</label>
                                 <Input
                                     value={settings.facebook}
                                     onChange={(e) => setSettings(prev => ({ ...prev, facebook: e.target.value }))}
@@ -191,7 +177,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Twitter URL</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Twitter URL</label>
                                 <Input
                                     value={settings.twitter}
                                     onChange={(e) => setSettings(prev => ({ ...prev, twitter: e.target.value }))}
@@ -199,7 +185,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Instagram URL</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Instagram URL</label>
                                 <Input
                                     value={settings.instagram}
                                     onChange={(e) => setSettings(prev => ({ ...prev, instagram: e.target.value }))}
@@ -207,7 +193,7 @@ export default function AdminSettings() {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">LinkedIn URL</label>
+                                <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">LinkedIn URL</label>
                                 <Input
                                     value={settings.linkedin}
                                     onChange={(e) => setSettings(prev => ({ ...prev, linkedin: e.target.value }))}
@@ -219,21 +205,21 @@ export default function AdminSettings() {
 
                     <TabsContent value="hero" className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium mb-2">Hero Title</label>
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Hero Title</label>
                             <Input
                                 value={settings.hero_title}
                                 onChange={(e) => setSettings(prev => ({ ...prev, hero_title: e.target.value }))}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Hero Subtitle</label>
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Hero Subtitle</label>
                             <Input
                                 value={settings.hero_subtitle}
                                 onChange={(e) => setSettings(prev => ({ ...prev, hero_subtitle: e.target.value }))}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium mb-2">Hero Description</label>
+                            <label className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-300">Hero Description</label>
                             <Textarea
                                 value={settings.hero_description}
                                 onChange={(e) => setSettings(prev => ({ ...prev, hero_description: e.target.value }))}
@@ -242,7 +228,7 @@ export default function AdminSettings() {
                         </div>
                     </TabsContent>
 
-                    <div className="pt-6 border-t mt-6 flex justify-between items-center">
+                    <div className="pt-6 border-t dark:border-slate-800 mt-6 flex justify-between items-center">
                         <Button
                             onClick={handleSave}
                             className="bg-indigo-600 hover:bg-indigo-700"
@@ -258,8 +244,8 @@ export default function AdminSettings() {
 
                         <div className="flex items-center gap-3">
                             <div className="text-right">
-                                <p className="text-sm font-medium text-slate-700">Export Project</p>
-                                <p className="text-xs text-slate-500">Download all project files</p>
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Export Project</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Download all project files</p>
                             </div>
                             <ProjectDownloader />
                         </div>

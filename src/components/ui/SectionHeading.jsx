@@ -24,25 +24,25 @@ export default function SectionHeading({
         >
             {badge && (
                 <span className={cn(
-                    'inline-block px-4 py-2 rounded-full text-sm font-medium mb-4',
+                    'inline-block px-4 py-2 rounded-full text-sm font-medium mb-4 transition-colors',
                     light
                         ? 'bg-white/10 border border-white/20 text-white/90'
-                        : 'bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700'
+                        : 'bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-transparent dark:border-indigo-500/20'
                 )}>
                     {badge}
                 </span>
             )}
             <h2 className={cn(
-                'text-3xl md:text-4xl lg:text-5xl font-bold mb-4',
-                light ? 'text-white' : 'text-slate-900'
+                'text-3xl md:text-4xl lg:text-5xl font-bold mb-6 transition-colors',
+                light ? 'text-white' : 'text-slate-900 dark:text-white'
             )}>
                 {title}
             </h2>
             {subtitle && (
                 <p className={cn(
-                    'text-lg max-w-2xl leading-relaxed',
+                    'text-lg max-w-2xl leading-relaxed transition-colors',
                     center && 'mx-auto',
-                    light ? 'text-white/70' : 'text-slate-600'
+                    light ? 'text-white/70' : 'text-slate-600 dark:text-slate-400'
                 )}>
                     {subtitle}
                 </p>

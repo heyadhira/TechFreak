@@ -3,15 +3,16 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import {
-    Target, Eye, Heart, Zap, Users, Award, Clock,
-    ArrowRight, Linkedin, Twitter, Github, Mail
+    Target, Eye, Heart, Zap, Users, Award,
+    ArrowRight, Linkedin, Twitter, Github
 } from 'lucide-react';
 import SectionHeading from '../components/ui/SectionHeading';
 import GlassCard from '../components/ui/GlassCard';
 import GradientButton from '../components/ui/GradientButton';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
+import PageHero from '../components/ui/PageHero';
 
 const defaultTeam = [
     {
@@ -53,12 +54,9 @@ const defaultTeam = [
 ];
 
 const timeline = [
-    { year: "2019", title: "The Beginning", description: "TechFreak started as a small freelance operation with a dream to help businesses go digital." },
-    { year: "2020", title: "First Office", description: "Opened our first office and grew to a team of 5 passionate developers and designers." },
-    { year: "2021", title: "100 Projects", description: "Celebrated our 100th successful project delivery and expanded our service offerings." },
-    { year: "2022", title: "Team Expansion", description: "Grew to 15+ team members and started serving clients across India." },
-    { year: "2023", title: "500+ Projects", description: "Reached the milestone of 500+ completed projects with 98% client satisfaction." },
-    { year: "2024", title: "Innovation Hub", description: "Launched our innovation lab focusing on cutting-edge web technologies." }
+    { year: "2024", title: "The Beginning", description: "TechFreak started with a passionate team and a dream to help businesses go digital, quickly serving clients across India." },
+    { year: "2025", title: "Scaling Operations", description: "Expanded our team and service offerings, delivering exceptional results for over 50 satisfied clients." },
+    { year: "2026", title: "Rapid Growth & Innovation", description: "Reached the milestone of 150+ completed projects with 98% client satisfaction and launched our innovation lab." }
 ];
 
 const values = [
@@ -71,52 +69,34 @@ const values = [
 export default function About() {
     const { data: teamMembers } = useQuery({
         queryKey: ['team'],
-        queryFn: () => base44.entities.TeamMember.list(),
+        queryFn: () => localClient.get('/team'),
         initialData: []
     });
 
-    const displayTeam = teamMembers.length > 0 ? teamMembers.filter(t => t.is_active !== false) : defaultTeam;
+    const displayTeam = teamMembers && teamMembers.length > 0 ? teamMembers.filter(t => t.is_active !== false) : defaultTeam;
 
     return (
-        <div className="pt-20">
-            {/* Hero Section */}
-            <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
-                <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                </div>
-
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <motion.span
-                        className="inline-block px-4 py-2 bg-white/10 border border-white/20 text-white/90 rounded-full text-sm font-medium mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        About Us
-                    </motion.span>
-                    <motion.h1
-                        className="text-4xl md:text-6xl font-bold text-white mb-6"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        We're Building The
-                        <br />
-                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Future of Web</span>
-                    </motion.h1>
-                    <motion.p
-                        className="text-lg text-white/70 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        A passionate team of developers and designers dedicated to helping Indian businesses succeed online.
-                    </motion.p>
-                </div>
-            </section>
+        <div>
+            <PageHero
+                title="Building the Future"
+                subtitle="Starting at ₹4,999"
+                badge="Premium Tech Agency"
+                badgeIcon={Users}
+                primaryBtnText="Work With Us"
+                primaryBtnLink={createPageUrl("Contact")}
+                secondaryBtnText="Our Services"
+                secondaryBtnLink={createPageUrl("Services")}
+                showStats={true}
+                floatingIcons={[
+                    { icon: Target, className: "top-20 left-[10%] text-red-400", delay: 0.2 },
+                    { icon: Heart, className: "top-40 right-[15%] text-pink-400", delay: 0.4 },
+                    { icon: Zap, className: "bottom-20 left-[20%] text-amber-400", delay: 0.6 },
+                    { icon: Award, className: "top-32 right-[5%] text-indigo-400", delay: 0.8 }
+                ]}
+            />
 
             {/* Story Section */}
-            <section className="py-24 bg-white">
+            < section className="py-24 bg-white dark:bg-slate-950 transition-colors duration-300" >
                 <div className="container mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
                         <motion.div
@@ -127,24 +107,24 @@ export default function About() {
                             <span className="inline-block px-4 py-2 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium mb-4">
                                 Our Story
                             </span>
-                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-6">
                                 From a Small Dream to
                                 <br />
-                                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">500+ Happy Clients</span>
+                                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">150+ Happy Clients</span>
                             </h2>
-                            <p className="text-slate-600 mb-6 leading-relaxed">
+                            <p className="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
                                 TechFreak was born from a simple belief: every business, regardless of size, deserves a stunning online presence.
-                                What started as a one-person freelance operation in 2019 has grown into a full-service web development agency
+                                What started as a passionate team operation in 2024 has grown into a full-service web development agency
                                 serving clients across India.
                             </p>
-                            <p className="text-slate-600 mb-8 leading-relaxed">
+                            <p className="text-slate-600 dark:text-slate-400 mb-8 leading-relaxed">
                                 Our journey has been driven by passion, innovation, and an unwavering commitment to quality.
                                 Today, we're proud to have helped over 500 businesses transform their digital presence and achieve their goals.
                             </p>
 
                             <div className="grid grid-cols-3 gap-6">
-                                <div className="text-center p-4 bg-slate-50 rounded-2xl">
-                                    <div className="text-3xl font-bold text-indigo-600 mb-1">
+                                <div className="text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl">
+                                    <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400 mb-1">
                                         <AnimatedCounter end={500} suffix="+" />
                                     </div>
                                     <p className="text-sm text-slate-600">Projects</p>
@@ -175,29 +155,30 @@ export default function About() {
                                 alt="Our team"
                                 className="rounded-3xl shadow-2xl"
                             />
-                            <div className="absolute -bottom-6 -left-6 p-6 bg-white rounded-2xl shadow-xl">
+                            <div className="absolute -bottom-6 -left-6 p-6 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
                                         <Award className="w-7 h-7 text-white" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-slate-900">Top Rated</p>
-                                        <p className="text-sm text-slate-600">Web Agency 2024</p>
+                                        <p className="font-bold text-slate-900 dark:text-white">Top Rated</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400">Web Agency 2024</p>
                                     </div>
                                 </div>
                             </div>
                         </motion.div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Mission & Values */}
-            <section className="py-24 bg-slate-50">
+            < section className="py-24 bg-slate-50 dark:bg-slate-900 transition-colors duration-300" >
                 <div className="container mx-auto px-4">
                     <SectionHeading
                         badge="Our Purpose"
                         title="Mission, Vision & Values"
                         subtitle="The principles that guide everything we do."
+                        className=""
                     />
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -209,31 +190,32 @@ export default function About() {
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
                             >
-                                <GlassCard className="h-full p-6 bg-white" glowColor="rgba(99, 102, 241, 0.1)">
+                                <GlassCard className="h-full p-6 bg-white dark:bg-slate-800" glowColor="rgba(99, 102, 241, 0.15)">
                                     <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4">
                                         <item.icon className="w-7 h-7 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
-                                    <p className="text-slate-600">{item.description}</p>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{item.title}</h3>
+                                    <p className="text-slate-600 dark:text-slate-400">{item.description}</p>
                                 </GlassCard>
                             </motion.div>
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Timeline */}
-            <section className="py-24 bg-white">
+            <section className="py-24 bg-white dark:bg-slate-950 transition-colors duration-300">
                 <div className="container mx-auto px-4">
                     <SectionHeading
                         badge="Our Journey"
                         title="The TechFreak Timeline"
                         subtitle="Key milestones in our growth story."
+                        className=""
                     />
 
-                    <div className="relative max-w-4xl mx-auto">
+                    <div className="relative max-w-5xl mx-auto">
                         {/* Timeline line */}
-                        <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500" />
+                        <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-indigo-500/0 via-indigo-500/50 to-purple-500/0" />
 
                         {timeline.map((item, index) => (
                             <motion.div
@@ -242,35 +224,47 @@ export default function About() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
-                                className={`relative flex items-center mb-12 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
+                                className={`relative flex items-center gap-8 mb-12 md:mb-24 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
                                     }`}
                             >
-                                <div className={`flex-1 ${index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:pl-12'} pl-12 md:pl-0`}>
-                                    <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold mb-2">
-                                        {item.year}
-                                    </span>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
-                                    <p className="text-slate-600">{item.description}</p>
+                                {/* Content Card */}
+                                <div className={`flex-1 pl-16 md:pl-0 relative z-10`}>
+                                    <GlassCard
+                                        className={`p-6 md:p-8 hover:border-indigo-500/30 transition-colors duration-300 ${index % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}
+                                        glowColor="rgba(99, 102, 241, 0.1)"
+                                    >
+                                        <span className="inline-block px-4 py-1.5 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full text-sm font-bold mb-4 border border-indigo-500/20">
+                                            {item.year}
+                                        </span>
+                                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{item.title}</h3>
+                                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed max-w-md ml-auto mr-auto md:mx-0">
+                                            {item.description}
+                                        </p>
+                                    </GlassCard>
                                 </div>
 
                                 {/* Center dot */}
-                                <div className="absolute left-4 md:left-1/2 w-4 h-4 bg-white border-4 border-indigo-500 rounded-full transform -translate-x-1/2" />
+                                <div className="absolute left-6 md:left-1/2 w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border-4 border-indigo-500 transform -translate-x-1/2 z-20 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
+                                </div>
 
+                                {/* Empty space for desktop alignment */}
                                 <div className="hidden md:block flex-1" />
                             </motion.div>
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Team Section */}
-            <section className="py-24 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+            < section className="py-24 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" >
                 <div className="container mx-auto px-4">
                     <SectionHeading
                         badge="Our Team"
                         title="Meet The People Behind TechFreak"
                         subtitle="Talented individuals who bring your vision to life."
                         light
+                        className=""
                     />
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -317,20 +311,20 @@ export default function About() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* CTA */}
-            <section className="py-20 bg-white">
+            < section className="py-20 bg-white dark:bg-slate-950 transition-colors duration-300" >
                 <div className="container mx-auto px-4 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                     >
-                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4">
                             Ready to Work With Us?
                         </h2>
-                        <p className="text-slate-600 mb-8 max-w-xl mx-auto">
+                        <p className="text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto">
                             Let's discuss how we can help your business grow online.
                         </p>
                         <Link to={createPageUrl("Contact")}>
@@ -341,7 +335,7 @@ export default function About() {
                         </Link>
                     </motion.div>
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

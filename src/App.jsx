@@ -6,11 +6,19 @@ import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { ThemeProvider } from '@/lib/ThemeContext';
+import { AdminAuthProvider } from '@/lib/AdminAuthContext';
+import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+
+// Helper to check if a page is an admin page (except login)
+const isProtectedAdminPage = (pageName) => {
+    return pageName.startsWith('Admin') && pageName !== 'AdminLogin';
+};
 
 const LayoutWrapper = ({ children, currentPageName }) => Layout ?
     <Layout currentPageName={currentPageName}>{children}</Layout>
@@ -47,17 +55,35 @@ const AuthenticatedApp = () => {
                     <MainPage />
                 </LayoutWrapper>
             } />
-            {Object.entries(Pages).map(([path, Page]) => (
-                <Route
-                    key={path}
-                    path={`/${path}`}
-                    element={
-                        <LayoutWrapper currentPageName={path}>
-                            <Page />
-                        </LayoutWrapper>
-                    }
-                />
-            ))}
+            {Object.entries(Pages).map(([path, Page]) => {
+                // Wrap admin pages with AdminProtectedRoute
+                if (isProtectedAdminPage(path)) {
+                    return (
+                        <Route
+                            key={path}
+                            path={`/${path}`}
+                            element={
+                                <AdminProtectedRoute>
+                                    <LayoutWrapper currentPageName={path}>
+                                        <Page />
+                                    </LayoutWrapper>
+                                </AdminProtectedRoute>
+                            }
+                        />
+                    );
+                }
+                return (
+                    <Route
+                        key={path}
+                        path={`/${path}`}
+                        element={
+                            <LayoutWrapper currentPageName={path}>
+                                <Page />
+                            </LayoutWrapper>
+                        }
+                    />
+                );
+            })}
             <Route path="*" element={<PageNotFound />} />
         </Routes>
     );
@@ -67,16 +93,21 @@ const AuthenticatedApp = () => {
 function App() {
 
     return (
-        <AuthProvider>
-            <QueryClientProvider client={queryClientInstance}>
-                <Router>
-                    <NavigationTracker />
-                    <AuthenticatedApp />
-                </Router>
-                <Toaster />
-            </QueryClientProvider>
-        </AuthProvider>
+        <ThemeProvider>
+            <AdminAuthProvider>
+                <AuthProvider>
+                    <QueryClientProvider client={queryClientInstance}>
+                        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                            <NavigationTracker />
+                            <AuthenticatedApp />
+                        </Router>
+                        <Toaster />
+                    </QueryClientProvider>
+                </AuthProvider>
+            </AdminAuthProvider>
+        </ThemeProvider>
     )
 }
 
 export default App
+

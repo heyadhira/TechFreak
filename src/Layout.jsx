@@ -1,48 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Menu, X, Home, Briefcase, FolderOpen, FileText,
-    Users, Mail, ChevronDown, Phone, MessageCircle
+    Phone, MessageCircle, Mail,
+    Facebook, Twitter, Instagram, Linkedin
 } from 'lucide-react';
 import WhatsAppButton from './components/ui/WhatsAppButton';
-
-const navLinks = [
-    { name: 'Home', page: 'Home', icon: Home },
-    { name: 'Services', page: 'Services', icon: Briefcase },
-    { name: 'Portfolio', page: 'Portfolio', icon: FolderOpen },
-    { name: 'About', page: 'About', icon: Users },
-    { name: 'Blog', page: 'Blog', icon: FileText },
-    { name: 'Contact', page: 'Contact', icon: Mail }
-];
+import Navbar from './components/ui/Navbar';
+import { navLinks } from './constants';
+import { cn } from './lib/utils';
 
 export default function Layout({ children, currentPageName }) {
-    const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const location = useLocation();
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-
-    useEffect(() => {
-        setIsMobileMenuOpen(false);
-    }, [location]);
-
-    const isHomePage = currentPageName === 'Home';
     const isAdminPage = currentPageName?.startsWith('Admin');
+    const isHomePage = currentPageName === 'Home';
 
     if (isAdminPage) {
         return <>{children}</>;
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
         
@@ -62,112 +38,10 @@ export default function Layout({ children, currentPageName }) {
         }
       `}</style>
 
-            {/* Header */}
-            <motion.header
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled || !isHomePage
-                        ? 'bg-white/95 backdrop-blur-lg shadow-lg shadow-slate-200/50'
-                        : 'bg-transparent'
-                    }`}
-                initial={{ y: -100 }}
-                animate={{ y: 0 }}
-                transition={{ duration: 0.5 }}
-            >
-                <div className="container mx-auto px-4">
-                    <div className="flex items-center justify-between h-20">
-                        {/* Logo */}
-                        <Link to={createPageUrl('Home')} className="flex items-center gap-2 group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 transition-shadow">
-                                <span className="text-white font-bold text-xl">T</span>
-                            </div>
-                            <span className={`text-2xl font-bold transition-colors ${isScrolled || !isHomePage ? 'text-slate-900' : 'text-white'
-                                }`}>
-                                Tech<span className="gradient-text">Freak</span>
-                            </span>
-                        </Link>
-
-                        {/* Desktop Nav */}
-                        <nav className="hidden lg:flex items-center gap-1">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.page}
-                                    to={createPageUrl(link.page)}
-                                    className={`px-4 py-2 rounded-xl font-medium transition-all ${currentPageName === link.page
-                                            ? 'bg-indigo-100 text-indigo-700'
-                                            : isScrolled || !isHomePage
-                                                ? 'text-slate-700 hover:text-indigo-600 hover:bg-slate-100'
-                                                : 'text-white/90 hover:text-white hover:bg-white/10'
-                                        }`}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                        </nav>
-
-                        {/* CTA Button */}
-                        <div className="hidden lg:flex items-center gap-4">
-                            <a
-                                href="tel:+919876543210"
-                                className={`flex items-center gap-2 font-medium transition-colors ${isScrolled || !isHomePage ? 'text-slate-700 hover:text-indigo-600' : 'text-white/90 hover:text-white'
-                                    }`}
-                            >
-                                <Phone className="w-4 h-4" />
-                                +91 98765 43210
-                            </a>
-                            <Link to={createPageUrl('Contact')}>
-                                <button className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-200 hover:shadow-orange-300 transition-all hover:scale-105">
-                                    Get Quote
-                                </button>
-                            </Link>
-                        </div>
-
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className={`lg:hidden p-2 rounded-xl transition-colors ${isScrolled || !isHomePage ? 'text-slate-900 hover:bg-slate-100' : 'text-white hover:bg-white/10'
-                                }`}
-                        >
-                            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Mobile Menu */}
-                <AnimatePresence>
-                    {isMobileMenuOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="lg:hidden bg-white border-t border-slate-100"
-                        >
-                            <nav className="container mx-auto px-4 py-4 space-y-1">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.page}
-                                        to={createPageUrl(link.page)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${currentPageName === link.page
-                                                ? 'bg-indigo-100 text-indigo-700'
-                                                : 'text-slate-700 hover:bg-slate-100'
-                                            }`}
-                                    >
-                                        <link.icon className="w-5 h-5" />
-                                        {link.name}
-                                    </Link>
-                                ))}
-                                <Link
-                                    to={createPageUrl('Contact')}
-                                    className="block mt-4 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-center font-semibold rounded-xl"
-                                >
-                                    Get Free Quote
-                                </Link>
-                            </nav>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.header>
+            <Navbar currentPageName={currentPageName} />
 
             {/* Main Content */}
-            <main>
+            <main className={cn(!isHomePage && "pt-24")}>
                 {children}
             </main>
 
@@ -178,9 +52,7 @@ export default function Layout({ children, currentPageName }) {
                         {/* Brand */}
                         <div>
                             <Link to={createPageUrl('Home')} className="flex items-center gap-2 mb-4">
-                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
-                                    <span className="text-white font-bold text-xl">T</span>
-                                </div>
+                                <img src="/img/logo.png" alt="TechFreak" className="w-10 h-10 rounded-xl object-cover" />
                                 <span className="text-2xl font-bold">
                                     Tech<span className="text-indigo-400">Freak</span>
                                 </span>
@@ -189,16 +61,21 @@ export default function Layout({ children, currentPageName }) {
                                 Premium web development services for Indian businesses. Best quality at the best price.
                             </p>
                             <div className="flex gap-3">
-                                {['facebook', 'twitter', 'instagram', 'linkedin'].map((social) => (
+                                {[
+                                    { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
+                                    { icon: Twitter, href: 'https://twitter.com', label: 'Twitter' },
+                                    { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
+                                    { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' }
+                                ].map((social) => (
                                     <a
-                                        key={social}
-                                        href={`https://${social}.com`}
+                                        key={social.label}
+                                        href={social.href}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-indigo-600 transition-colors"
+                                        className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-indigo-600 hover:scale-110 transition-all duration-300"
+                                        aria-label={social.label}
                                     >
-                                        <span className="sr-only">{social}</span>
-                                        <div className="w-5 h-5 bg-current rounded-sm" />
+                                        <social.icon className="w-5 h-5 text-slate-300 hover:text-white" />
                                     </a>
                                 ))}
                             </div>
@@ -289,7 +166,7 @@ export default function Layout({ children, currentPageName }) {
             </footer>
 
             {/* WhatsApp Button */}
-            <WhatsAppButton phone="919876543210" />
+            <WhatsAppButton phoneNumber="919876543210" />
         </div>
     );
 }

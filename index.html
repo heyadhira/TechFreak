@@ -3,10 +3,56 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/img/favicon.png" />
+  <link rel="apple-touch-icon" href="/img/favicon.png" />
+
+  <!-- Viewport & Mobile -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6366f1" />
+
+  <!-- SEO Meta Tags -->
+  <title>TechFreak - Premium Web Development Agency | Websites Starting at ₹4,999</title>
+  <meta name="description"
+    content="Transform your business with stunning, high-performance websites. TechFreak offers premium web development services for Indian businesses at affordable prices. 150+ projects delivered with 98% client satisfaction." />
+  <meta name="keywords"
+    content="web development, website design, e-commerce, SEO, UI/UX design, web applications, India, affordable websites" />
+  <meta name="author" content="TechFreak" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="TechFreak - Premium Web Development Agency" />
+  <meta property="og:description"
+    content="Transform your business with stunning, high-performance websites starting at ₹4,999. Trusted by 150+ Indian businesses." />
+  <meta property="og:site_name" content="TechFreak" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="TechFreak - Premium Web Development Agency" />
+  <meta name="twitter:description"
+    content="Transform your business with stunning, high-performance websites starting at ₹4,999. Trusted by 150+ Indian businesses." />
+
+  <!-- Preload Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json" />
-  <title>TechFreak</title>
+
+  <!-- Theme Flash Prevention -->
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') || 'dark';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
 </head>
 
 <body>

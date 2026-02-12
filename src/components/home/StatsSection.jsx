@@ -6,14 +6,14 @@ import AnimatedCounter from '../ui/AnimatedCounter';
 const stats = [
     {
         icon: Briefcase,
-        value: 500,
+        value: 150,
         suffix: "+",
         label: "Projects Completed",
         color: "from-blue-500 to-indigo-600"
     },
     {
         icon: Users,
-        value: 350,
+        value: 135,
         suffix: "+",
         label: "Happy Clients",
         color: "from-purple-500 to-pink-600"
@@ -27,7 +27,7 @@ const stats = [
     },
     {
         icon: Clock,
-        value: 5,
+        value: 2,
         suffix: "+",
         label: "Years Experience",
         color: "from-green-500 to-emerald-600"

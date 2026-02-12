@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Check, Sparkles, ArrowRight } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading';
 import GradientButton from '../ui/GradientButton';
@@ -70,11 +70,11 @@ const defaultPlans = [
 export default function PricingSection() {
     const { data: plans } = useQuery({
         queryKey: ['pricing-plans'],
-        queryFn: () => base44.entities.PricingPlan.list(),
+        queryFn: () => localClient.get('/pricing'),
         initialData: []
     });
 
-    const displayPlans = plans.length > 0 ? plans.filter(p => p.is_active !== false) : defaultPlans;
+    const displayPlans = plans && plans.length > 0 ? plans.filter(p => p.is_active !== false) : defaultPlans;
 
     return (
         <section className="py-24 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
@@ -90,6 +90,7 @@ export default function PricingSection() {
                     title="Affordable Packages For Everyone"
                     subtitle="Transparent pricing with no hidden costs. Choose the plan that fits your needs."
                     light
+                    className=""
                 />
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
@@ -101,8 +102,8 @@ export default function PricingSection() {
                             viewport={{ once: true, margin: "-50px" }}
                             transition={{ duration: 0.5, delay: index * 0.1 }}
                             className={`relative rounded-3xl p-1 ${plan.is_popular
-                                    ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500'
-                                    : 'bg-white/10'
+                                ? 'bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500'
+                                : 'bg-white/10'
                                 }`}
                         >
                             {plan.is_popular && (
@@ -112,27 +113,27 @@ export default function PricingSection() {
                                 </div>
                             )}
 
-                            <div className={`h-full rounded-[calc(1.5rem-4px)] p-6 lg:p-8 ${plan.is_popular ? 'bg-white' : 'bg-white/5 backdrop-blur-sm'
+                            <div className={`h-full rounded-[calc(1.5rem-4px)] p-6 lg:p-8 ${plan.is_popular ? 'bg-white dark:bg-slate-900' : 'bg-white/5 backdrop-blur-sm'
                                 }`}>
-                                <h3 className={`text-xl font-bold mb-2 ${plan.is_popular ? 'text-slate-900' : 'text-white'}`}>
+                                <h3 className={`text-xl font-bold mb-2 ${plan.is_popular ? 'text-slate-900 dark:text-white' : 'text-white'}`}>
                                     {plan.name}
                                 </h3>
-                                <p className={`text-sm mb-6 ${plan.is_popular ? 'text-slate-600' : 'text-white/70'}`}>
+                                <p className={`text-sm mb-6 ${plan.is_popular ? 'text-slate-600 dark:text-slate-400' : 'text-white/70'}`}>
                                     {plan.description}
                                 </p>
 
                                 <div className="mb-6">
                                     <div className="flex items-baseline gap-2">
-                                        <span className={`text-4xl font-bold ${plan.is_popular ? 'text-slate-900' : 'text-white'}`}>
+                                        <span className={`text-4xl font-bold ${plan.is_popular ? 'text-slate-900 dark:text-white' : 'text-white'}`}>
                                             ₹{plan.price?.toLocaleString('en-IN')}
                                         </span>
                                         {plan.original_price && (
-                                            <span className={`text-lg line-through ${plan.is_popular ? 'text-slate-400' : 'text-white/50'}`}>
+                                            <span className={`text-lg line-through ${plan.is_popular ? 'text-slate-400 dark:text-slate-500' : 'text-white/50'}`}>
                                                 ₹{plan.original_price?.toLocaleString('en-IN')}
                                             </span>
                                         )}
                                     </div>
-                                    <p className={`text-sm ${plan.is_popular ? 'text-slate-500' : 'text-white/60'}`}>
+                                    <p className={`text-sm ${plan.is_popular ? 'text-slate-500 dark:text-slate-500' : 'text-white/60'}`}>
                                         One-time payment
                                     </p>
                                 </div>
@@ -140,11 +141,11 @@ export default function PricingSection() {
                                 <ul className="space-y-3 mb-8">
                                     {plan.features?.map((feature, i) => (
                                         <li key={i} className="flex items-start gap-3">
-                                            <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${plan.is_popular ? 'bg-green-100' : 'bg-white/10'
+                                            <div className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${plan.is_popular ? 'bg-green-100 dark:bg-green-900/30' : 'bg-white/10'
                                                 }`}>
-                                                <Check className={`w-3 h-3 ${plan.is_popular ? 'text-green-600' : 'text-green-400'}`} />
+                                                <Check className={`w-3 h-3 ${plan.is_popular ? 'text-green-600 dark:text-green-400' : 'text-green-400'}`} />
                                             </div>
-                                            <span className={`text-sm ${plan.is_popular ? 'text-slate-600' : 'text-white/80'}`}>
+                                            <span className={`text-sm ${plan.is_popular ? 'text-slate-600 dark:text-slate-400' : 'text-white/80'}`}>
                                                 {feature}
                                             </span>
                                         </li>
@@ -158,7 +159,7 @@ export default function PricingSection() {
                                             <ArrowRight className="w-4 h-4" />
                                         </GradientButton>
                                     ) : (
-                                        <GradientButton variant="ghost" className="w-full border-white/30">
+                                        <GradientButton variant="ghost" className="w-full border-white/30 hover:bg-white/20">
                                             Get Started
                                             <ArrowRight className="w-4 h-4" />
                                         </GradientButton>

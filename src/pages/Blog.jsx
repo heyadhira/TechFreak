@@ -3,11 +3,12 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Calendar, Clock, ArrowRight, Search, Tag } from 'lucide-react';
+import { localClient } from '@/api/localClient';
+import { Calendar, Clock, Search } from 'lucide-react';
 import { format } from 'date-fns';
-import SectionHeading from '../components/ui/SectionHeading';
 import GradientButton from '../components/ui/GradientButton';
+import PageHero from '../components/ui/PageHero';
+import { Sparkles, Newspaper, BookOpen, PenTool } from 'lucide-react';
 
 const categories = [
     { id: 'all', label: 'All Posts' },
@@ -94,7 +95,7 @@ export default function Blog() {
 
     const { data: posts } = useQuery({
         queryKey: ['blog-posts'],
-        queryFn: () => base44.entities.BlogPost.list(),
+        queryFn: () => localClient.get('/posts'),
         initialData: []
     });
 
@@ -111,45 +112,27 @@ export default function Blog() {
     const featuredPost = displayPosts.find(p => p.is_featured) || displayPosts[0];
 
     return (
-        <div className="pt-20">
-            {/* Hero Section */}
-            <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
-                <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                </div>
-
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <motion.span
-                        className="inline-block px-4 py-2 bg-white/10 border border-white/20 text-white/90 rounded-full text-sm font-medium mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        Our Blog
-                    </motion.span>
-                    <motion.h1
-                        className="text-4xl md:text-6xl font-bold text-white mb-6"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        Insights & Updates
-                        <br />
-                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">From Our Experts</span>
-                    </motion.h1>
-                    <motion.p
-                        className="text-lg text-white/70 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        Tips, trends, and insights on web development, design, and digital marketing.
-                    </motion.p>
-                </div>
-            </section>
+        <div>
+            <PageHero
+                title="Tech Insights"
+                subtitle="Expert Guidance"
+                badge="Knowledge Hub"
+                badgeIcon={BookOpen}
+                primaryBtnText="Our Services"
+                primaryBtnLink={createPageUrl("Services")}
+                secondaryBtnText="Portfolio"
+                secondaryBtnLink={createPageUrl("Portfolio")}
+                showStats={true}
+                floatingIcons={[
+                    { icon: Newspaper, className: "top-20 left-[10%] text-blue-400", delay: 0.2 },
+                    { icon: PenTool, className: "top-40 right-[15%] text-purple-400", delay: 0.4 },
+                    { icon: Sparkles, className: "bottom-20 left-[20%] text-amber-400", delay: 0.6 },
+                    { icon: BookOpen, className: "top-32 right-[5%] text-indigo-400", delay: 0.8 }
+                ]}
+            />
 
             {/* Blog Content */}
-            <section className="py-16 bg-slate-50">
+            < section className="py-16 bg-slate-50 dark:bg-slate-950 transition-colors duration-300" >
                 <div className="container mx-auto px-4">
                     {/* Search and Filter */}
                     <div className="flex flex-col lg:flex-row gap-6 mb-12">
@@ -160,7 +143,7 @@ export default function Blog() {
                                 placeholder="Search articles..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             />
                         </div>
 
@@ -170,8 +153,8 @@ export default function Blog() {
                                     key={cat.id}
                                     onClick={() => setActiveCategory(cat.id)}
                                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${activeCategory === cat.id
-                                            ? 'bg-indigo-600 text-white'
-                                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'
                                         }`}
                                 >
                                     {cat.label}
@@ -189,7 +172,7 @@ export default function Blog() {
                         >
                             <Link
                                 to={createPageUrl("BlogPost") + `?slug=${featuredPost.slug || featuredPost.id}`}
-                                className="group block bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all"
+                                className="group block bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-slate-100 dark:border-slate-800"
                             >
                                 <div className="grid lg:grid-cols-2">
                                     <div className="relative h-64 lg:h-auto overflow-hidden">
@@ -206,14 +189,14 @@ export default function Blog() {
                                         <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium capitalize mb-4 w-fit">
                                             {featuredPost.category?.replace('-', ' ')}
                                         </span>
-                                        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-4 group-hover:text-indigo-600 transition-colors">
+                                        <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                             {featuredPost.title}
                                         </h2>
-                                        <p className="text-slate-600 mb-6 line-clamp-3">{featuredPost.excerpt}</p>
-                                        <div className="flex items-center gap-4 text-sm text-slate-500">
+                                        <p className="text-slate-600 dark:text-slate-400 mb-6 line-clamp-3">{featuredPost.excerpt}</p>
+                                        <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-500">
                                             <span className="flex items-center gap-1">
                                                 <Calendar className="w-4 h-4" />
-                                                {format(new Date(featuredPost.created_date), 'MMM d, yyyy')}
+                                                {format(new Date(featuredPost.created_at || featuredPost.created_date), 'MMM d, yyyy')}
                                             </span>
                                             <span className="flex items-center gap-1">
                                                 <Clock className="w-4 h-4" />
@@ -238,7 +221,7 @@ export default function Blog() {
                             >
                                 <Link
                                     to={createPageUrl("BlogPost") + `?slug=${post.slug || post.id}`}
-                                    className="group block bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all h-full"
+                                    className="group block bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all h-full border border-slate-100 dark:border-slate-800"
                                 >
                                     <div className="relative h-48 overflow-hidden">
                                         <img
@@ -248,14 +231,14 @@ export default function Blog() {
                                         />
                                     </div>
                                     <div className="p-6">
-                                        <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium capitalize mb-3">
+                                        <span className="inline-block px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 rounded-full text-xs font-medium capitalize mb-3">
                                             {post.category?.replace('-', ' ')}
                                         </span>
-                                        <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">
                                             {post.title}
                                         </h3>
-                                        <p className="text-slate-600 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
-                                        <div className="flex items-center justify-between text-xs text-slate-500">
+                                        <p className="text-slate-600 dark:text-slate-400 text-sm mb-4 line-clamp-2">{post.excerpt}</p>
+                                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-500">
                                             <span>{post.author_name}</span>
                                             <span className="flex items-center gap-1">
                                                 <Clock className="w-3 h-3" />
@@ -274,10 +257,10 @@ export default function Blog() {
                         </div>
                     )}
                 </div>
-            </section>
+            </section >
 
             {/* Newsletter CTA */}
-            <section className="py-20 bg-gradient-to-br from-indigo-600 to-purple-700">
+            < section className="py-20 bg-gradient-to-br from-indigo-600 to-purple-700" >
                 <div className="container mx-auto px-4 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
@@ -302,7 +285,7 @@ export default function Blog() {
                         </div>
                     </motion.div>
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

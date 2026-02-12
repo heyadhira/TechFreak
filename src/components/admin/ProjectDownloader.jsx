@@ -3,7 +3,6 @@ import { Download, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
 
 export default function ProjectDownloader() {
     const [downloading, setDownloading] = useState(false);

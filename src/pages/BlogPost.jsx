@@ -3,11 +3,16 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import { Calendar, Clock, ArrowLeft, Share2, Facebook, Twitter, Linkedin, Copy } from 'lucide-react';
+import { localClient } from '@/api/localClient';
+import {
+    Calendar, Clock,
+    Facebook, Twitter, Linkedin, Copy, Sparkles,
+    Newspaper, BookOpen, PenTool
+} from 'lucide-react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import GradientButton from '../components/ui/GradientButton';
+import PageHero from '../components/ui/PageHero';
 import { toast } from 'sonner';
 
 const defaultPost = {
@@ -102,13 +107,13 @@ export default function BlogPost() {
     const urlParams = new URLSearchParams(window.location.search);
     const slug = urlParams.get('slug');
 
-    const { data: posts } = useQuery({
-        queryKey: ['blog-posts'],
-        queryFn: () => base44.entities.BlogPost.list(),
-        initialData: []
+    const { data: fetchPost } = useQuery({
+        queryKey: ['blog-post', slug],
+        queryFn: () => localClient.get(`/posts/by-slug/${slug}`),
+        enabled: !!slug
     });
 
-    const post = posts.find(p => p.slug === slug || p.id === slug) || defaultPost;
+    const post = fetchPost || defaultPost;
 
     const copyLink = () => {
         navigator.clipboard.writeText(window.location.href);
@@ -130,55 +135,48 @@ export default function BlogPost() {
 
     return (
         <div className="pt-20">
-            {/* Hero */}
-            <section className="relative h-[50vh] min-h-[400px] flex items-end">
-                <div className="absolute inset-0">
-                    <img
-                        src={post.featured_image}
-                        alt={post.title}
-                        className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent" />
-                </div>
+            <PageHero
+                title={post.title}
+                subtitle={`Starting at ₹4,999`}
+                badge={post.category?.replace('-', ' ')}
+                badgeIcon={BookOpen}
+                backgroundImage={post.featured_image}
+                primaryBtnText="Back to Blog"
+                primaryBtnLink={createPageUrl("Blog")}
+                secondaryBtnText="Explore Services"
+                secondaryBtnLink={createPageUrl("Services")}
+                floatingIcons={[
+                    { icon: PenTool, className: "top-20 left-[10%] text-blue-400", delay: 0.2 },
+                    { icon: Sparkles, className: "top-40 right-[15%] text-amber-400", delay: 0.4 },
+                    { icon: Newspaper, className: "bottom-20 left-[20%] text-indigo-400", delay: 0.6 }
+                ]}
+            />
 
-                <div className="container mx-auto px-4 relative z-10 pb-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <Link
-                            to={createPageUrl("Blog")}
-                            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4" />
-                            Back to Blog
-                        </Link>
-
-                        <span className="inline-block px-3 py-1 bg-indigo-500 text-white text-sm font-medium rounded-full capitalize mb-4">
-                            {post.category?.replace('-', ' ')}
-                        </span>
-
-                        <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 max-w-4xl">
-                            {post.title}
-                        </h1>
-
-                        <div className="flex flex-wrap items-center gap-6 text-white/80">
-                            <span>By {post.author_name}</span>
-                            <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {format(new Date(post.created_date), 'MMM d, yyyy')}
-                            </span>
-                            <span className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {post.read_time} min read
-                            </span>
+            <div className="container mx-auto px-4 relative z-10 -mt-10 mb-12">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap items-center gap-6 p-6 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white/80"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                            <PenTool className="w-5 h-5 text-indigo-400" />
                         </div>
-                    </motion.div>
-                </div>
-            </section>
+                        <span className="font-medium">By {post.author_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-white/40" />
+                        {format(new Date(post.created_at || post.created_date), 'MMM d, yyyy')}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-white/40" />
+                        {post.read_time} min read
+                    </div>
+                </motion.div>
+            </div>
 
             {/* Content */}
-            <section className="py-16 bg-white">
+            <section className="py-16 bg-white transition-colors duration-300">
                 <div className="container mx-auto px-4">
                     <div className="grid lg:grid-cols-4 gap-12">
                         {/* Main Content */}
@@ -302,7 +300,7 @@ export default function BlogPost() {
                         </div>
                     </div>
                 </div>
-            </section>
-        </div>
+            </section >
+        </div >
     );
 }

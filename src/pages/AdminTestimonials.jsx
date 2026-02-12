@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Plus, Pencil, Trash2, Loader2, Upload, X, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,14 +21,15 @@ export default function AdminTestimonials() {
 
     const queryClient = useQueryClient();
 
-    const { data: testimonials, isLoading } = useQuery({
+    const { data: testimonialsResponse, isLoading } = useQuery({
         queryKey: ['admin-testimonials'],
-        queryFn: () => base44.entities.Testimonial.list(),
-        initialData: []
+        queryFn: () => localClient.get('/testimonials'),
     });
 
+    const testimonials = testimonialsResponse || [];
+
     const createMutation = useMutation({
-        mutationFn: (data) => base44.entities.Testimonial.create(data),
+        mutationFn: (data) => localClient.post('/testimonials', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-testimonials'] });
             setIsOpen(false);
@@ -38,7 +39,7 @@ export default function AdminTestimonials() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }) => base44.entities.Testimonial.update(id, data),
+        mutationFn: (variables) => localClient.put(`/testimonials/${variables.id}`, variables.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-testimonials'] });
             setIsOpen(false);
@@ -48,7 +49,7 @@ export default function AdminTestimonials() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id) => base44.entities.Testimonial.delete(id),
+        mutationFn: (id) => localClient.delete(`/testimonials/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-testimonials'] });
             toast.success('Testimonial deleted successfully');
@@ -93,16 +94,27 @@ export default function AdminTestimonials() {
         if (!file) return;
 
         setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({ ...prev, photo_url: file_url }));
-        setUploading(false);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'testimonials');
+
+        try {
+            const response = await localClient.post('/upload', formData);
+            setFormData(prev => ({ ...prev, photo_url: response.url }));
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            console.error('Upload failed:', error);
+            toast.error('Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (
         <AdminLayout currentPage="AdminTestimonials" title="Manage Testimonials">
-            <div className="bg-white rounded-2xl shadow-sm">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <p className="text-slate-600">Showcase client feedback</p>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <p className="text-slate-600 dark:text-slate-400">Showcase client feedback</p>
                     <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) resetForm(); }}>
                         <DialogTrigger asChild>
                             <Button className="bg-indigo-600 hover:bg-indigo-700">
@@ -221,30 +233,30 @@ export default function AdminTestimonials() {
                         <div className="col-span-full text-center py-12 text-slate-500">No testimonials yet. Add your first testimonial.</div>
                     ) : (
                         testimonials.map((item) => (
-                            <div key={item.id} className="bg-slate-50 rounded-xl p-6 relative group">
+                            <div key={item.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 relative group border border-slate-200 dark:border-slate-800 transition-all hover:shadow-md">
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                    <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => handleEdit(item)}>
+                                    <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm" onClick={() => handleEdit(item)}>
                                         <Pencil className="w-3 h-3" />
                                     </Button>
-                                    <Button size="icon" variant="secondary" className="h-8 w-8 hover:bg-red-100" onClick={() => deleteMutation.mutate(item.id)}>
+                                    <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm hover:bg-red-100 dark:hover:bg-red-500/20" onClick={() => deleteMutation.mutate(item.id)}>
                                         <Trash2 className="w-3 h-3 text-red-500" />
                                     </Button>
                                 </div>
                                 <div className="flex gap-1 mb-3">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < item.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`} />
+                                        <Star key={i} className={`w-4 h-4 ${i < item.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600'}`} />
                                     ))}
                                 </div>
-                                <p className="text-slate-700 mb-4 italic">"{item.content}"</p>
+                                <p className="text-slate-700 dark:text-slate-300 mb-4 italic">"{item.content}"</p>
                                 <div className="flex items-center gap-3">
                                     <img
                                         src={item.photo_url || `https://ui-avatars.com/api/?name=${item.client_name}&background=6366f1&color=fff&size=100`}
                                         alt={item.client_name}
-                                        className="w-12 h-12 rounded-full object-cover"
+                                        className="w-12 h-12 rounded-full object-cover ring-2 ring-indigo-500/20"
                                     />
                                     <div>
-                                        <p className="font-semibold text-slate-900">{item.client_name}</p>
-                                        <p className="text-sm text-slate-600">
+                                        <p className="font-semibold text-slate-900 dark:text-white">{item.client_name}</p>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400">
                                             {item.client_designation}{item.company && `, ${item.company}`}
                                         </p>
                                     </div>

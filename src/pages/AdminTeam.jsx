@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Plus, Pencil, Trash2, Loader2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import AdminLayout from '../components/admin/AdminLayout';
 import { toast } from 'sonner';
 
@@ -18,17 +28,19 @@ export default function AdminTeam() {
         linkedin: '', twitter: '', github: '', order: 0, is_active: true
     });
     const [uploading, setUploading] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     const queryClient = useQueryClient();
 
-    const { data: members, isLoading } = useQuery({
+    const { data: membersResponse, isLoading } = useQuery({
         queryKey: ['admin-team'],
-        queryFn: () => base44.entities.TeamMember.list(),
-        initialData: []
+        queryFn: () => localClient.get('/team'),
     });
 
+    const members = membersResponse || [];
+
     const createMutation = useMutation({
-        mutationFn: (data) => base44.entities.TeamMember.create(data),
+        mutationFn: (data) => localClient.post('/team', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-team'] });
             setIsOpen(false);
@@ -38,7 +50,8 @@ export default function AdminTeam() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }) => base44.entities.TeamMember.update(id, data),
+        /** @param {{id: any, data: any}} variables */
+        mutationFn: ({ id, data }) => localClient.put(`/team/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-team'] });
             setIsOpen(false);
@@ -48,10 +61,11 @@ export default function AdminTeam() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id) => base44.entities.TeamMember.delete(id),
+        mutationFn: (id) => localClient.delete(`/team/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-team'] });
             toast.success('Team member removed successfully');
+            setDeleteId(null);
         }
     });
 
@@ -94,16 +108,36 @@ export default function AdminTeam() {
         if (!file) return;
 
         setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({ ...prev, photo_url: file_url }));
-        setUploading(false);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'team');
+
+        try {
+            // We use fetch directly here to handle FormData properly if localClient doesn't support it easily
+            // Note: Assuming localClient.defaults.baseURL is set, or we use relative path if proxied
+            // But since we are inside the component, let's try using localClient first with specific headers
+
+            const response = await localClient.post('/upload', formData);
+
+            // The controller returns { path, url }
+            // We use the full Cloudinary URL for both preview and storage.
+            // The backend TeamMemberController is updated to handle full URLs.
+            setFormData(prev => ({ ...prev, photo_url: response.url }));
+            toast.success('Image uploaded successfully');
+
+        } catch (error) {
+            console.error('Upload failed:', error);
+            toast.error('Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (
         <AdminLayout currentPage="AdminTeam" title="Manage Team">
-            <div className="bg-white rounded-2xl shadow-sm">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <p className="text-slate-600">Add and manage team members</p>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <p className="text-slate-600 dark:text-slate-400">Add and manage team members</p>
                     <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) resetForm(); }}>
                         <DialogTrigger asChild>
                             <Button className="bg-indigo-600 hover:bg-indigo-700">
@@ -223,6 +257,23 @@ export default function AdminTeam() {
                             </form>
                         </DialogContent>
                     </Dialog>
+
+                    <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the team member.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteMutation.mutate(deleteId)} className="bg-red-600 hover:bg-red-700">
+                                    {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6">
@@ -232,23 +283,23 @@ export default function AdminTeam() {
                         <div className="col-span-full text-center py-12 text-slate-500">No team members yet. Add your first member.</div>
                     ) : (
                         members.map((member) => (
-                            <div key={member.id} className="bg-slate-50 rounded-xl p-6 text-center relative group">
+                            <div key={member.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 text-center relative group border border-slate-200 dark:border-slate-800 transition-all hover:shadow-md">
                                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                                    <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => handleEdit(member)}>
+                                    <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm" onClick={() => handleEdit(member)}>
                                         <Pencil className="w-3 h-3" />
                                     </Button>
-                                    <Button size="icon" variant="secondary" className="h-8 w-8 hover:bg-red-100" onClick={() => deleteMutation.mutate(member.id)}>
+                                    <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm hover:bg-red-100 dark:hover:bg-red-500/20" onClick={() => setDeleteId(member.id)}>
                                         <Trash2 className="w-3 h-3 text-red-500" />
                                     </Button>
                                 </div>
                                 <img
                                     src={member.photo_url || `https://ui-avatars.com/api/?name=${member.name}&background=6366f1&color=fff&size=150`}
                                     alt={member.name}
-                                    className="w-24 h-24 rounded-full mx-auto object-cover mb-4"
+                                    className="w-24 h-24 rounded-full mx-auto object-cover mb-4 ring-2 ring-indigo-500/20"
                                 />
-                                <h3 className="font-semibold text-slate-900">{member.name}</h3>
-                                <p className="text-sm text-indigo-600">{member.designation}</p>
-                                {member.bio && <p className="text-sm text-slate-500 mt-2 line-clamp-2">{member.bio}</p>}
+                                <h3 className="font-semibold text-slate-900 dark:text-white">{member.name}</h3>
+                                <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">{member.designation}</p>
+                                {member.bio && <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{member.bio}</p>}
                             </div>
                         ))
                     )}

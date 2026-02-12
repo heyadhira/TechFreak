@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Plus, Pencil, Trash2, Loader2, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,12 +27,12 @@ export default function AdminPortfolio() {
 
     const { data: projects, isLoading } = useQuery({
         queryKey: ['admin-portfolio'],
-        queryFn: () => base44.entities.Portfolio.list(),
+        queryFn: () => localClient.get('/portfolio'),
         initialData: []
     });
 
     const createMutation = useMutation({
-        mutationFn: (data) => base44.entities.Portfolio.create(data),
+        mutationFn: (data) => localClient.post('/portfolio', data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] });
             setIsOpen(false);
@@ -42,7 +42,7 @@ export default function AdminPortfolio() {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }) => base44.entities.Portfolio.update(id, data),
+        mutationFn: (variables) => localClient.put(`/portfolio/${variables.id}`, variables.data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] });
             setIsOpen(false);
@@ -52,7 +52,7 @@ export default function AdminPortfolio() {
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id) => base44.entities.Portfolio.delete(id),
+        mutationFn: (id) => localClient.delete(`/portfolio/${id}`),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin-portfolio'] });
             toast.success('Project deleted successfully');
@@ -98,9 +98,20 @@ export default function AdminPortfolio() {
         if (!file) return;
 
         setUploading(true);
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setFormData(prev => ({ ...prev, thumbnail_url: file_url }));
-        setUploading(false);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'portfolio');
+
+        try {
+            const response = await localClient.post('/upload', formData);
+            setFormData(prev => ({ ...prev, thumbnail_url: response.url }));
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            console.error('Upload failed:', error);
+            toast.error('Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const addTech = () => {
@@ -116,9 +127,9 @@ export default function AdminPortfolio() {
 
     return (
         <AdminLayout currentPage="AdminPortfolio" title="Manage Portfolio">
-            <div className="bg-white rounded-2xl shadow-sm">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-                    <p className="text-slate-600">Showcase your best work</p>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <p className="text-slate-600 dark:text-slate-400">Showcase your best work</p>
                     <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) resetForm(); }}>
                         <DialogTrigger asChild>
                             <Button className="bg-indigo-600 hover:bg-indigo-700">
@@ -190,13 +201,13 @@ export default function AdminPortfolio() {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <label className="w-32 h-24 border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors">
+                                            <label className="w-32 h-24 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition-colors bg-slate-50 dark:bg-slate-800/50">
                                                 {uploading ? <Loader2 className="w-6 h-6 animate-spin text-slate-400" /> : <Upload className="w-6 h-6 text-slate-400" />}
-                                                <span className="text-xs text-slate-500 mt-1">Upload</span>
+                                                <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">Upload</span>
                                                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                                             </label>
                                         )}
-                                        <p className="text-sm text-slate-500">Or paste image URL:</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">Or paste image URL:</p>
                                         <Input
                                             value={formData.thumbnail_url}
                                             onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
@@ -218,9 +229,9 @@ export default function AdminPortfolio() {
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {formData.tech_stack.map((tech, i) => (
-                                            <span key={i} className="px-3 py-1 bg-slate-100 rounded-full text-sm flex items-center gap-2">
+                                            <span key={i} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm flex items-center gap-2">
                                                 {tech}
-                                                <button type="button" onClick={() => removeTech(i)} className="text-slate-500 hover:text-red-500">×</button>
+                                                <button type="button" onClick={() => removeTech(i)} className="text-slate-500 dark:text-slate-400 hover:text-red-500">×</button>
                                             </span>
                                         ))}
                                     </div>
@@ -260,26 +271,26 @@ export default function AdminPortfolio() {
                         <div className="col-span-full text-center py-12 text-slate-500">No projects yet. Add your first project.</div>
                     ) : (
                         projects.map((project) => (
-                            <div key={project.id} className="bg-slate-50 rounded-xl overflow-hidden">
-                                <div className="aspect-video relative">
+                            <div key={project.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 transition-all hover:shadow-md">
+                                <div className="aspect-video relative group">
                                     {project.thumbnail_url ? (
                                         <img src={project.thumbnail_url} alt={project.title} className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">No Image</div>
+                                        <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500">No Image</div>
                                     )}
-                                    <div className="absolute top-2 right-2 flex gap-1">
-                                        <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => handleEdit(project)}>
+                                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm" onClick={() => handleEdit(project)}>
                                             <Pencil className="w-3 h-3" />
                                         </Button>
-                                        <Button size="icon" variant="secondary" className="h-8 w-8 hover:bg-red-100" onClick={() => deleteMutation.mutate(project.id)}>
+                                        <Button size="icon" variant="secondary" className="h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm hover:bg-red-100 dark:hover:bg-red-500/20" onClick={() => deleteMutation.mutate(project.id)}>
                                             <Trash2 className="w-3 h-3 text-red-500" />
                                         </Button>
                                     </div>
                                 </div>
                                 <div className="p-4">
-                                    <span className="text-xs font-medium text-indigo-600 capitalize">{project.category?.replace('-', ' ')}</span>
-                                    <h3 className="font-semibold text-slate-900 mt-1">{project.title}</h3>
-                                    <p className="text-sm text-slate-600 mt-1 line-clamp-2">{project.description}</p>
+                                    <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 capitalize">{project.category?.replace('-', ' ')}</span>
+                                    <h3 className="font-semibold text-slate-900 dark:text-white mt-1">{project.title}</h3>
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{project.description}</p>
                                 </div>
                             </div>
                         ))

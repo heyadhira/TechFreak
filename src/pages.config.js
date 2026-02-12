@@ -54,6 +54,7 @@ import About from './pages/About';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Contact from './pages/Contact';
+import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminServices from './pages/AdminServices';
 import AdminLeads from './pages/AdminLeads';
@@ -74,6 +75,7 @@ export const PAGES = {
     "Blog": Blog,
     "BlogPost": BlogPost,
     "Contact": Contact,
+    "AdminLogin": AdminLogin,
     "AdminDashboard": AdminDashboard,
     "AdminServices": AdminServices,
     "AdminLeads": AdminLeads,

@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
+import { useAdminAuth } from '@/lib/AdminAuthContext';
 import {
     LayoutDashboard, Briefcase, FolderOpen, FileText, Users,
     Star, CreditCard, Settings, Mail, Eye, LogOut
 } from 'lucide-react';
+import ThemeToggle from '../ui/ThemeToggle';
 
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', page: 'AdminDashboard' },
@@ -21,28 +23,31 @@ const menuItems = [
 ];
 
 export default function AdminLayout({ children, currentPage, title }) {
-    const { data: leads } = useQuery({
-        queryKey: ['admin-leads-count'],
-        queryFn: () => base44.entities.Lead.filter({ is_read: false }),
-        initialData: []
+    const { adminLogout } = useAdminAuth();
+
+    const { data: unreadData } = useQuery({
+        queryKey: ['admin-leads-unread-count'],
+        queryFn: () => localClient.get('/leads/unread-count'),
+        initialData: { count: 0 },
+        refetchInterval: 10000,
     });
 
-    const newLeadsCount = leads.length;
+    const newLeadsCount = unreadData?.count || 0;
 
     const handleLogout = () => {
-        base44.auth.logout();
+        adminLogout();
     };
 
     return (
-        <div className="min-h-screen bg-slate-100 flex">
+        <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex transition-colors duration-300">
             {/* Sidebar */}
-            <aside className="w-64 bg-slate-900 text-white fixed h-full">
+            <aside className="w-64 bg-slate-900 dark:bg-slate-900 text-white fixed h-full border-r border-slate-800 dark:border-slate-800">
                 <div className="p-6">
                     <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <span className="text-white font-bold text-xl">T</span>
                         </div>
-                        <span className="text-xl font-bold">TechFreak</span>
+                        <span className="text-xl font-bold tracking-tight">TechFreak</span>
                     </Link>
                 </div>
 
@@ -65,10 +70,10 @@ export default function AdminLayout({ children, currentPage, title }) {
                     ))}
                 </nav>
 
-                <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/5">
                     <button
                         onClick={handleLogout}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-white/70 hover:text-white hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all"
                     >
                         <LogOut className="w-5 h-5" />
                         Logout
@@ -77,18 +82,21 @@ export default function AdminLayout({ children, currentPage, title }) {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-64 p-8">
+            <main className="flex-1 ml-64 p-8 min-h-screen">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex justify-between items-center mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
+                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{title}</h1>
                         </div>
-                        <Link to={createPageUrl('Home')} target="_blank">
-                            <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow">
-                                <Eye className="w-4 h-4" />
-                                View Site
-                            </button>
-                        </Link>
+                        <div className="flex items-center gap-4">
+                            <ThemeToggle variant="icon" className="bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800" />
+                            <Link to={createPageUrl('Home')} target="_blank">
+                                <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-lg shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 transition-all">
+                                    <Eye className="w-4 h-4" />
+                                    View Site
+                                </button>
+                            </Link>
+                        </div>
                     </div>
 
                     {children}

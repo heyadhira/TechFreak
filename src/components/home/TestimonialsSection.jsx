@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading';
 
@@ -41,11 +41,11 @@ export default function TestimonialsSection() {
 
     const { data: testimonials } = useQuery({
         queryKey: ['testimonials'],
-        queryFn: () => base44.entities.Testimonial.list(),
+        queryFn: () => localClient.get('/testimonials'),
         initialData: []
     });
 
-    const displayTestimonials = testimonials.length > 0
+    const displayTestimonials = testimonials && testimonials.length > 0
         ? testimonials.filter(t => t.is_active !== false)
         : defaultTestimonials;
 
@@ -73,12 +73,12 @@ export default function TestimonialsSection() {
     };
 
     return (
-        <section className="py-24 bg-white relative overflow-hidden">
+        <section className="py-24 bg-white dark:bg-slate-900 relative overflow-hidden transition-colors duration-300">
             {/* Background decoration */}
-            <div className="absolute top-20 left-10 text-slate-100">
+            <div className="absolute top-20 left-10 text-slate-100 dark:text-slate-800">
                 <Quote className="w-32 h-32" />
             </div>
-            <div className="absolute bottom-20 right-10 text-slate-100 transform rotate-180">
+            <div className="absolute bottom-20 right-10 text-slate-100 dark:text-slate-800 transform rotate-180">
                 <Quote className="w-32 h-32" />
             </div>
 
@@ -87,6 +87,7 @@ export default function TestimonialsSection() {
                     badge="Testimonials"
                     title="What Our Clients Say"
                     subtitle="Don't just take our word for it — hear from businesses who've worked with us."
+                    className=""
                 />
 
                 <div className="max-w-4xl mx-auto">
@@ -100,13 +101,13 @@ export default function TestimonialsSection() {
                                 animate="center"
                                 exit="exit"
                                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                                className="bg-gradient-to-br from-slate-50 to-white rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100"
+                                className="bg-gradient-to-br from-slate-50 to-white dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 md:p-12 shadow-xl border border-slate-100 dark:border-slate-800"
                             >
                                 <div className="flex flex-col md:flex-row gap-8 items-center">
                                     {/* Client photo */}
                                     <div className="flex-shrink-0">
                                         <div className="relative">
-                                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white shadow-xl">
+                                            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white dark:border-slate-700 shadow-xl">
                                                 <img
                                                     src={displayTestimonials[current]?.photo_url || `https://ui-avatars.com/api/?name=${displayTestimonials[current]?.client_name}&background=6366f1&color=fff&size=150`}
                                                     alt={displayTestimonials[current]?.client_name}
@@ -126,20 +127,20 @@ export default function TestimonialsSection() {
                                             {[...Array(5)].map((_, i) => (
                                                 <Star
                                                     key={i}
-                                                    className={`w-5 h-5 ${i < (displayTestimonials[current]?.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}`}
+                                                    className={`w-5 h-5 ${i < (displayTestimonials[current]?.rating || 5) ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-700'}`}
                                                 />
                                             ))}
                                         </div>
 
-                                        <p className="text-lg md:text-xl text-slate-700 leading-relaxed mb-6 italic">
+                                        <p className="text-lg md:text-xl text-slate-700 dark:text-slate-300 leading-relaxed mb-6 italic">
                                             "{displayTestimonials[current]?.content}"
                                         </p>
 
                                         <div>
-                                            <h4 className="text-xl font-bold text-slate-900">
+                                            <h4 className="text-xl font-bold text-slate-900 dark:text-white">
                                                 {displayTestimonials[current]?.client_name}
                                             </h4>
-                                            <p className="text-slate-600">
+                                            <p className="text-slate-600 dark:text-slate-400">
                                                 {displayTestimonials[current]?.client_designation}
                                                 {displayTestimonials[current]?.company && `, ${displayTestimonials[current]?.company}`}
                                             </p>
@@ -153,11 +154,11 @@ export default function TestimonialsSection() {
                         <div className="flex justify-center gap-4 mt-8">
                             <motion.button
                                 onClick={() => navigate(-1)}
-                                className="p-3 rounded-full bg-white shadow-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
-                                <ChevronLeft className="w-5 h-5 text-slate-700" />
+                                <ChevronLeft className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                             </motion.button>
 
                             <div className="flex items-center gap-2">
@@ -169,8 +170,8 @@ export default function TestimonialsSection() {
                                             setCurrent(i);
                                         }}
                                         className={`w-2.5 h-2.5 rounded-full transition-all ${i === current
-                                                ? 'bg-indigo-600 w-8'
-                                                : 'bg-slate-300 hover:bg-slate-400'
+                                            ? 'bg-indigo-600 w-8'
+                                            : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600'
                                             }`}
                                     />
                                 ))}
@@ -178,11 +179,11 @@ export default function TestimonialsSection() {
 
                             <motion.button
                                 onClick={() => navigate(1)}
-                                className="p-3 rounded-full bg-white shadow-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                                className="p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
                             >
-                                <ChevronRight className="w-5 h-5 text-slate-700" />
+                                <ChevronRight className="w-5 h-5 text-slate-700 dark:text-slate-300" />
                             </motion.button>
                         </div>
                     </div>

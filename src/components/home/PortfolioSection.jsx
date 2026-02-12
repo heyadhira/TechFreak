@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { localClient } from '@/api/localClient';
 import { ExternalLink, ArrowRight } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading';
 import GradientButton from '../ui/GradientButton';
@@ -16,75 +16,33 @@ const categories = [
     { id: 'educational', label: 'Educational' }
 ];
 
-const defaultProjects = [
-    {
-        id: 1,
-        title: "ShopEase E-Commerce",
-        category: "e-commerce",
-        thumbnail_url: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop",
-        tech_stack: ["React", "Node.js", "MongoDB"]
-    },
-    {
-        id: 2,
-        title: "TechCorp Website",
-        category: "corporate",
-        thumbnail_url: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop",
-        tech_stack: ["Next.js", "Tailwind"]
-    },
-    {
-        id: 3,
-        title: "EduLearn Platform",
-        category: "educational",
-        thumbnail_url: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&h=400&fit=crop",
-        tech_stack: ["React", "Firebase"]
-    },
-    {
-        id: 4,
-        title: "StartupX Landing",
-        category: "startup",
-        thumbnail_url: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&h=400&fit=crop",
-        tech_stack: ["React", "Framer Motion"]
-    },
-    {
-        id: 5,
-        title: "Fashion Store",
-        category: "e-commerce",
-        thumbnail_url: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop",
-        tech_stack: ["Shopify", "Liquid"]
-    },
-    {
-        id: 6,
-        title: "Finance Dashboard",
-        category: "corporate",
-        thumbnail_url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop",
-        tech_stack: ["React", "D3.js"]
-    }
-];
+
 
 export default function PortfolioSection() {
     const [activeFilter, setActiveFilter] = useState('all');
 
     const { data: projects } = useQuery({
-        queryKey: ['portfolio'],
-        queryFn: () => base44.entities.Portfolio.list(),
+        queryKey: ['portfolio', 'featured'],
+        queryFn: () => localClient.get('/portfolio?featured=true'),
         initialData: []
     });
 
-    const displayProjects = projects.length > 0 ? projects.filter(p => p.is_active !== false) : defaultProjects;
+    const displayProjects = projects;
 
     const filteredProjects = activeFilter === 'all'
         ? displayProjects
         : displayProjects.filter(p => p.category === activeFilter);
 
     return (
-        <section className="py-24 bg-slate-50 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent" />
+        <section className="py-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
+            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white dark:from-slate-950 to-transparent" />
 
             <div className="container mx-auto px-4 relative z-10">
                 <SectionHeading
                     badge="Our Portfolio"
                     title="Work That Speaks For Itself"
                     subtitle="Browse through our recent projects and see the quality we deliver."
+                    className=""
                 />
 
                 {/* Filter tabs */}
@@ -94,8 +52,8 @@ export default function PortfolioSection() {
                             key={cat.id}
                             onClick={() => setActiveFilter(cat.id)}
                             className={`px-5 py-2.5 rounded-full font-medium transition-all ${activeFilter === cat.id
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
+                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
                                 }`}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
@@ -119,7 +77,7 @@ export default function PortfolioSection() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 transition={{ duration: 0.3, delay: index * 0.05 }}
-                                className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+                                className="group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800"
                             >
                                 <div className="relative aspect-[4/3] overflow-hidden">
                                     <img
@@ -144,7 +102,7 @@ export default function PortfolioSection() {
                                                 href={project.project_url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-white hover:text-blue-300 transition-colors"
+                                                className="flex items-center gap-2 text-white hover:text-indigo-400 transition-colors"
                                             >
                                                 <ExternalLink className="w-4 h-4" />
                                                 View Live
@@ -155,8 +113,8 @@ export default function PortfolioSection() {
 
                                 {/* Card footer */}
                                 <div className="p-5">
-                                    <span className="text-sm text-indigo-600 font-medium capitalize">{project.category?.replace('-', ' ')}</span>
-                                    <h3 className="text-lg font-bold text-slate-900 mt-1 group-hover:text-indigo-600 transition-colors">
+                                    <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium capitalize">{project.category?.replace('-', ' ')}</span>
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                         {project.title}
                                     </h3>
                                 </div>

@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMutation } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
-import {
-    Phone, Mail, MapPin, Clock, Send, MessageCircle,
-    CheckCircle, Loader2, ArrowRight
-} from 'lucide-react';
+import { localClient } from '@/api/localClient';
+import { createPageUrl } from '@/utils';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import GlassCard from '../components/ui/GlassCard';
 import GradientButton from '../components/ui/GradientButton';
+import PageHero from '../components/ui/PageHero';
+import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Loader2, ArrowRight, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
 
 const services = [
@@ -56,7 +55,7 @@ export default function Contact() {
     const [submitted, setSubmitted] = useState(false);
 
     const createLead = useMutation({
-        mutationFn: (data) => base44.entities.Lead.create(data),
+        mutationFn: (data) => localClient.post('/leads', data),
         onSuccess: () => {
             setSubmitted(true);
             toast.success('Message sent successfully!');
@@ -84,45 +83,27 @@ export default function Contact() {
     };
 
     return (
-        <div className="pt-20">
-            {/* Hero Section */}
-            <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
-                <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" />
-                </div>
-
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <motion.span
-                        className="inline-block px-4 py-2 bg-white/10 border border-white/20 text-white/90 rounded-full text-sm font-medium mb-6"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        Get In Touch
-                    </motion.span>
-                    <motion.h1
-                        className="text-4xl md:text-6xl font-bold text-white mb-6"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                    >
-                        Let's Build Something
-                        <br />
-                        <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Amazing Together</span>
-                    </motion.h1>
-                    <motion.p
-                        className="text-lg text-white/70 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        Have a project in mind? Get a free consultation and quote within 24 hours.
-                    </motion.p>
-                </div>
-            </section>
+        <div>
+            <PageHero
+                title="Let's Connect"
+                subtitle="Starting at ₹4,999"
+                badge="Available for Projects"
+                badgeIcon={MessageCircle}
+                primaryBtnText="Get Free Quote"
+                primaryBtnLink="#contact-form"
+                secondaryBtnText="What We Offer"
+                secondaryBtnLink={createPageUrl("Services")}
+                showStats={true}
+                floatingIcons={[
+                    { icon: Phone, className: "top-20 left-[10%] text-green-400", delay: 0.2 },
+                    { icon: Mail, className: "top-40 right-[15%] text-blue-400", delay: 0.4 },
+                    { icon: MessageCircle, className: "bottom-20 left-[20%] text-indigo-400", delay: 0.6 },
+                    { icon: Megaphone, className: "top-32 right-[5%] text-amber-400", delay: 0.8 }
+                ]}
+            />
 
             {/* Contact Section */}
-            <section className="py-24 bg-slate-50">
+            <section className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
                 <div className="container mx-auto px-4">
                     <div className="grid lg:grid-cols-5 gap-12">
                         {/* Contact Info */}
@@ -132,7 +113,7 @@ export default function Contact() {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                             >
-                                <h2 className="text-2xl font-bold text-slate-900 mb-6">Contact Information</h2>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Contact Information</h2>
 
                                 <div className="space-y-6 mb-8">
                                     {contactInfo.map((item, index) => (
@@ -141,13 +122,13 @@ export default function Contact() {
                                                 <item.icon className="w-5 h-5 text-white" />
                                             </div>
                                             <div>
-                                                <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                                                <h4 className="font-semibold text-slate-900 dark:text-white">{item.title}</h4>
                                                 {item.href ? (
-                                                    <a href={item.href} className="text-slate-600 hover:text-indigo-600 transition-colors">
+                                                    <a href={item.href} className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                                                         {item.value}
                                                     </a>
                                                 ) : (
-                                                    <p className="text-slate-600">{item.value}</p>
+                                                    <p className="text-slate-600 dark:text-slate-400">{item.value}</p>
                                                 )}
                                             </div>
                                         </div>
@@ -185,7 +166,7 @@ export default function Contact() {
                                 whileInView={{ opacity: 1, x: 0 }}
                                 viewport={{ once: true }}
                             >
-                                <GlassCard className="p-8 bg-white" glowColor="rgba(99, 102, 241, 0.1)">
+                                <GlassCard className="p-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800" glowColor="rgba(99, 102, 241, 0.15)">
                                     {submitted ? (
                                         <div className="text-center py-12">
                                             <motion.div
@@ -196,8 +177,8 @@ export default function Contact() {
                                             >
                                                 <CheckCircle className="w-10 h-10 text-green-600" />
                                             </motion.div>
-                                            <h3 className="text-2xl font-bold text-slate-900 mb-2">Message Sent!</h3>
-                                            <p className="text-slate-600 mb-6">
+                                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Message Sent!</h3>
+                                            <p className="text-slate-600 dark:text-slate-400 mb-6">
                                                 Thank you for reaching out. We'll get back to you within 24 hours.
                                             </p>
                                             <GradientButton onClick={() => setSubmitted(false)} variant="outline">
@@ -206,13 +187,13 @@ export default function Contact() {
                                         </div>
                                     ) : (
                                         <>
-                                            <h2 className="text-2xl font-bold text-slate-900 mb-2">Send us a Message</h2>
-                                            <p className="text-slate-600 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+                                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Send us a Message</h2>
+                                            <p className="text-slate-600 dark:text-slate-400 mb-6">Fill out the form below and we'll get back to you shortly.</p>
 
                                             <form onSubmit={handleSubmit} className="space-y-6">
                                                 <div className="grid md:grid-cols-2 gap-6">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Full Name <span className="text-red-500">*</span>
                                                         </label>
                                                         <Input
@@ -224,7 +205,7 @@ export default function Contact() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Email Address <span className="text-red-500">*</span>
                                                         </label>
                                                         <Input
@@ -240,7 +221,7 @@ export default function Contact() {
 
                                                 <div className="grid md:grid-cols-2 gap-6">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Phone Number
                                                         </label>
                                                         <Input
@@ -251,7 +232,7 @@ export default function Contact() {
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Company Name
                                                         </label>
                                                         <Input
@@ -265,7 +246,7 @@ export default function Contact() {
 
                                                 <div className="grid md:grid-cols-2 gap-6">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Service Interested In
                                                         </label>
                                                         <Select
@@ -283,7 +264,7 @@ export default function Contact() {
                                                         </Select>
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                             Budget Range
                                                         </label>
                                                         <Select
@@ -303,7 +284,7 @@ export default function Contact() {
                                                 </div>
 
                                                 <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                                         Project Details <span className="text-red-500">*</span>
                                                     </label>
                                                     <Textarea
@@ -351,7 +332,7 @@ export default function Contact() {
                     width="100%"
                     height="100%"
                     style={{ border: 0 }}
-                    allowFullScreen=""
+                    allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="TechFreak Location"
