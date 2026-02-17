@@ -1,54 +1,61 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/api/supabaseClient';
 
 const AdminAuthContext = createContext(undefined);
-
-// Admin credentials (in production, this should be on the backend)
-const ADMIN_CREDENTIALS = {
-    email: 'adhirasudhir@gmail.com',
-    password: 'Adhira@1682'
-};
 
 export function AdminAuthProvider({ children }) {
     const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
     const [adminUser, setAdminUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check if admin is already logged in on mount
+    // Check existing session on mount and listen for auth changes
     useEffect(() => {
-        const storedAuth = localStorage.getItem('adminAuth');
-        if (storedAuth) {
-            try {
-                const authData = JSON.parse(storedAuth);
-                if (authData.isAuthenticated && authData.email) {
-                    setIsAdminAuthenticated(true);
-                    setAdminUser({ email: authData.email });
-                }
-            } catch (e) {
-                localStorage.removeItem('adminAuth');
+        // Get the current session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                setIsAdminAuthenticated(true);
+                setAdminUser({ email: session.user.email });
             }
-        }
-        setIsLoading(false);
+            setIsLoading(false);
+        });
+
+        // Listen for auth state changes (login, logout, token refresh)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                setIsAdminAuthenticated(true);
+                setAdminUser({ email: session.user.email });
+            } else {
+                setIsAdminAuthenticated(false);
+                setAdminUser(null);
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     const adminLogin = async (email, password) => {
-        // Validate credentials
-        if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
-            setIsAdminAuthenticated(true);
-            setAdminUser({ email });
-            localStorage.setItem('adminAuth', JSON.stringify({
-                isAuthenticated: true,
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
                 email,
-                loginTime: new Date().toISOString()
-            }));
+                password,
+            });
+
+            if (error) {
+                return { success: false, error: error.message };
+            }
+
+            setIsAdminAuthenticated(true);
+            setAdminUser({ email: data.user.email });
             return { success: true };
+        } catch (err) {
+            return { success: false, error: 'An unexpected error occurred' };
         }
-        return { success: false, error: 'Invalid email or password' };
     };
 
-    const adminLogout = () => {
+    const adminLogout = async () => {
+        await supabase.auth.signOut();
         setIsAdminAuthenticated(false);
         setAdminUser(null);
-        localStorage.removeItem('adminAuth');
     };
 
     return (

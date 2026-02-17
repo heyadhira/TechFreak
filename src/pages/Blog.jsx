@@ -99,7 +99,7 @@ export default function Blog() {
         initialData: []
     });
 
-    const displayPosts = posts.length > 0 ? posts.filter(p => p.is_published !== false) : defaultPosts;
+    const displayPosts = posts.length > 0 ? posts : defaultPosts;
 
     const filteredPosts = displayPosts.filter(post => {
         const categoryMatch = activeCategory === 'all' || post.category === activeCategory;
