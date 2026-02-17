@@ -44,10 +44,10 @@ export default function AdminLayout({ children, currentPage, title }) {
             <aside className="w-64 bg-slate-900 dark:bg-slate-900 text-white fixed h-full border-r border-slate-800 dark:border-slate-800">
                 <div className="p-6">
                     <Link to={createPageUrl('Home')} className="flex items-center gap-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                            <span className="text-white font-bold text-xl">T</span>
-                        </div>
-                        <span className="text-xl font-bold tracking-tight">TechFreak</span>
+                        <img src="/img/logo.png" alt="TechFreak" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-indigo-500/20" />
+                        <span className="text-xl font-bold tracking-tight">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Tech</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">Freak</span>
+                        </span>
                     </Link>
                 </div>
 

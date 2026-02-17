@@ -23,7 +23,7 @@ export default function AdminTestimonials() {
 
     const { data: testimonialsResponse, isLoading } = useQuery({
         queryKey: ['admin-testimonials'],
-        queryFn: () => localClient.get('/testimonials'),
+        queryFn: () => localClient.get('/testimonials?active=all'),
     });
 
     const testimonials = testimonialsResponse || [];

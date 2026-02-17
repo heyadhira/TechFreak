@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { localClient } from '@/api/localClient';
 import {
     Globe, ShoppingCart, Smartphone, Search, PenTool,
-    Server, ArrowRight
+    Server, ArrowRight, Eye
 } from 'lucide-react';
 import GlassCard from '../ui/GlassCard';
 import SectionHeading from '../ui/SectionHeading';
@@ -70,6 +70,8 @@ export default function ServicesSection() {
 
     const displayServices = services && services.length > 0 ? services.filter(s => s.is_active !== false) : defaultServices;
 
+    const generateSlug = (title) => title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
+
     return (
         <section className="py-24 bg-gradient-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 relative overflow-hidden transition-colors duration-300">
             {/* Background decoration */}
@@ -118,6 +120,15 @@ export default function ServicesSection() {
                                             ₹{service.price_starting?.toLocaleString('en-IN')}
                                         </span>
                                     </div>
+
+                                    <Link
+                                        to={`/ServiceDetail?slug=${service.slug || generateSlug(service.title)}`}
+                                        className="mt-4 flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group/link"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                        View Details
+                                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
+                                    </Link>
                                 </GlassCard>
                             </motion.div>
                         );

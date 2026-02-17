@@ -1,0 +1,18 @@
+# TechFreak SEO - robots.txt
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Disallow admin pages from being crawled
+Disallow: /AdminLogin
+Disallow: /AdminDashboard
+Disallow: /AdminServices
+Disallow: /AdminTestimonials
+Disallow: /AdminBlog
+Disallow: /AdminPortfolio
+Disallow: /AdminTeam
+Disallow: /AdminContact
+
+# Sitemap location
+Sitemap: https://techfreak.in/sitemap.xml

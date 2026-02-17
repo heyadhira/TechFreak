@@ -61,7 +61,7 @@ export default function AdminDashboard() {
 
     const { data: testimonialsResponse } = useQuery({
         queryKey: ['admin-testimonials-list'],
-        queryFn: () => localClient.get('/testimonials'),
+        queryFn: () => localClient.get('/testimonials?active=all'),
         refetchInterval: 30000,
     });
 

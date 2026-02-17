@@ -16,8 +16,8 @@ export default function AdminServices() {
     const [isOpen, setIsOpen] = useState(false);
     const [editingService, setEditingService] = useState(null);
     const [formData, setFormData] = useState({
-        title: '', description: '', icon: 'Globe', price_starting: 0,
-        features: [], is_featured: false, is_active: true, order: 0
+        title: '', slug: '', description: '', long_description: '', icon: 'Globe', price_starting: 0,
+        features: [], image_url: '', is_featured: false, is_active: true, order: 0
     });
     const [newFeature, setNewFeature] = useState('');
 
@@ -60,8 +60,8 @@ export default function AdminServices() {
 
     const resetForm = () => {
         setFormData({
-            title: '', description: '', icon: 'Globe', price_starting: 0,
-            features: [], is_featured: false, is_active: true, order: 0
+            title: '', slug: '', description: '', long_description: '', icon: 'Globe', price_starting: 0,
+            features: [], image_url: '', is_featured: false, is_active: true, order: 0
         });
         setEditingService(null);
         setNewFeature('');
@@ -71,10 +71,13 @@ export default function AdminServices() {
         setEditingService(service);
         setFormData({
             title: service.title || '',
+            slug: service.slug || '',
             description: service.description || '',
+            long_description: service.long_description || '',
             icon: service.icon || 'Globe',
             price_starting: service.price_starting || 0,
             features: service.features || [],
+            image_url: service.image_url || '',
             is_featured: service.is_featured || false,
             is_active: service.is_active !== false,
             order: service.order || 0
@@ -84,10 +87,14 @@ export default function AdminServices() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        const submitData = {
+            ...formData,
+            slug: formData.slug || formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        };
         if (editingService) {
-            updateMutation.mutate({ id: editingService.id, data: formData });
+            updateMutation.mutate({ id: editingService.id, data: submitData });
         } else {
-            createMutation.mutate(formData);
+            createMutation.mutate(submitData);
         }
     };
 
@@ -122,17 +129,46 @@ export default function AdminServices() {
                                     <label className="block text-sm font-medium mb-1">Title</label>
                                     <Input
                                         value={formData.title}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                                        onChange={(e) => {
+                                            const title = e.target.value;
+                                            const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                                            setFormData(prev => ({ ...prev, title, slug: editingService ? prev.slug : slug }));
+                                        }}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">Description</label>
+                                    <label className="block text-sm font-medium mb-1">Slug (URL-friendly, auto-generated)</label>
+                                    <Input
+                                        value={formData.slug}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+                                        placeholder="auto-generated-from-title"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Short Description</label>
                                     <Textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         rows={3}
                                         required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Detailed Description (for service detail page)</label>
+                                    <Textarea
+                                        value={formData.long_description}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, long_description: e.target.value }))}
+                                        rows={5}
+                                        placeholder="Detailed description shown on the individual service page..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Service Image URL</label>
+                                    <Input
+                                        value={formData.image_url}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
+                                        placeholder="https://..."
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">

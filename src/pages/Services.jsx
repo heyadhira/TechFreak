@@ -7,7 +7,7 @@ import { localClient } from '@/api/localClient';
 import {
     Globe, ShoppingCart, Smartphone, Search, PenTool,
     Server, ArrowRight, Check, Code2, Palette, Gauge,
-    Shield, HeartHandshake, Clock, Rocket, Sparkles
+    Shield, HeartHandshake, Clock, Rocket, Sparkles, Eye
 } from 'lucide-react';
 import SectionHeading from '../components/ui/SectionHeading';
 import GlassCard from '../components/ui/GlassCard';
@@ -96,6 +96,8 @@ export default function Services() {
         ? services.filter(s => s.is_active !== false)
         : defaultServices;
 
+    const generateSlug = (title) => title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
+
     return (
         <div>
             <PageHero
@@ -155,11 +157,19 @@ export default function Services() {
                                                 <span className="text-sm text-slate-500 dark:text-slate-500">Starting from</span>
                                                 <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">₹{service.price_starting?.toLocaleString('en-IN')}</p>
                                             </div>
-                                            <Link to={createPageUrl("Contact") + `?service=${service.title}`}>
-                                                <GradientButton variant="primary" size="sm">
-                                                    Get Quote
-                                                </GradientButton>
-                                            </Link>
+                                            <div className="flex gap-2">
+                                                <Link to={`/ServiceDetail?slug=${service.slug || generateSlug(service.title)}`}>
+                                                    <GradientButton variant="outline" size="sm">
+                                                        <Eye className="w-4 h-4" />
+                                                        View More
+                                                    </GradientButton>
+                                                </Link>
+                                                <Link to={createPageUrl("Contact") + `?service=${service.title}`}>
+                                                    <GradientButton variant="primary" size="sm">
+                                                        Get Quote
+                                                    </GradientButton>
+                                                </Link>
+                                            </div>
                                         </div>
                                     </GlassCard>
                                 </motion.div>

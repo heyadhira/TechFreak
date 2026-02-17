@@ -36,21 +36,22 @@ export default function AdminSettings() {
         queryFn: () => localClient.get('/settings'),
     });
 
-    const savedSettings = savedSettingsResponse?.data || [];
+    // localClient.get('/settings') returns a { key: value } map
+    const savedSettings = savedSettingsResponse || {};
 
     useEffect(() => {
-        if (savedSettings.length > 0) {
+        if (savedSettings && typeof savedSettings === 'object' && Object.keys(savedSettings).length > 0) {
             const loadedSettings = {};
-            savedSettings.forEach(s => {
+            Object.entries(savedSettings).forEach(([key, value]) => {
                 try {
-                    loadedSettings[s.setting_key] = JSON.parse(s.setting_value);
+                    loadedSettings[key] = typeof value === 'string' ? JSON.parse(value) : value;
                 } catch {
-                    loadedSettings[s.setting_key] = s.setting_value;
+                    loadedSettings[key] = value;
                 }
             });
             setSettings(prev => ({ ...prev, ...loadedSettings }));
         }
-    }, [savedSettings]);
+    }, [JSON.stringify(savedSettings)]);
 
     const saveMutation = useMutation({
         mutationFn: (data) => localClient.post('/settings', data),

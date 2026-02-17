@@ -4,11 +4,14 @@ import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowRight, Phone, MessageCircle, Quote } from 'lucide-react';
 import GradientButton from '../ui/GradientButton';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function CTASection() {
+    const { settings } = useSiteSettings();
+
     return (
         <section className="py-24 bg-white dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
-            {/* Background decoration */}
+            {/* ... existing background decoration ... */}
             <div className="absolute inset-0">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full bg-gradient-to-b from-blue-50 dark:from-blue-900/20 via-indigo-50/50 dark:via-indigo-900/10 to-transparent rounded-full blur-3xl" />
             </div>
@@ -51,7 +54,7 @@ export default function CTASection() {
                                 <ArrowRight className="w-5 h-5" />
                             </GradientButton>
                         </Link>
-                        <a href="https://wa.me/919876543210?text=Hi!%20I'm%20interested%20in%20your%20web%20development%20services." target="_blank" rel="noopener noreferrer">
+                        <a href={`https://wa.me/${settings.whatsapp}?text=Hi!%20I'm%20interested%20in%20your%20web%20development%20services.`} target="_blank" rel="noopener noreferrer">
                             <GradientButton variant="outline" size="lg" className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
                                 <MessageCircle className="w-5 h-5" />
                                 Chat on WhatsApp
@@ -61,13 +64,13 @@ export default function CTASection() {
 
                     {/* Contact quick links */}
                     <div className="flex flex-wrap justify-center gap-8 text-slate-600 dark:text-slate-400">
-                        <a href="tel:+919876543210" className="flex items-center gap-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        <a href={`tel:${settings.phone?.replace(/[^0-9+]/g, '')}`} className="flex items-center gap-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                             <Phone className="w-5 h-5" />
-                            <span>+91 98765 43210</span>
+                            <span>{settings.phone}</span>
                         </a>
-                        <a href="mailto:hello@techfreak.in" className="flex items-center gap-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                        <a href={`mailto:${settings.email}`} className="flex items-center gap-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                             <Quote className="w-5 h-5" />
-                            <span>hello@techfreak.in</span>
+                            <span>{settings.email}</span>
                         </a>
                     </div>
                 </motion.div>

@@ -1,55 +1,61 @@
 # Setup Guide
 
-## Base44 Platform Setup
+## 1. Supabase Setup
 
-### 1. Create Account
-- Go to base44.com
-- Sign up for free account
-- Create new app
+1. Create a project at [supabase.com](https://supabase.com)
+2. Open the **SQL Editor** and run `supabase_migration.sql` to create all tables
+3. (Optional) Run `seed_data.sql` to populate sample data
+4. Copy your **Project URL** and **Anon Key** from Settings → API
 
-### 2. Import Entities
-In Base44 dashboard, create these entities using the JSON schemas from entities/ folder:
-- Service
-- Portfolio  
-- BlogPost
-- TeamMember
-- Testimonial
-- PricingPlan
-- Lead
-- SiteSettings
+## 2. Cloudinary Setup
 
-### 3. Upload Files
-Copy all files from this export to your Base44 app:
-- All pages from pages/ folder
-- All components from components/ folder
-- Layout.jsx
-- Entity schemas from entities/ folder
+1. Sign up at [cloudinary.com](https://cloudinary.com)
+2. Copy your **Cloud Name** from the dashboard
 
-### 4. Configure Settings
-1. Go to /AdminDashboard
-2. Navigate to Settings
-3. Update:
-   - Site name and contact info
-   - SEO settings
+## 3. Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name
+```
+
+## 4. Install & Run
+
+```bash
+npm install
+npm run dev
+```
+
+## 5. Admin Configuration
+
+1. Navigate to `/AdminLogin`
+2. Go to **Settings** and update:
+   - Site name and tagline
+   - Phone, email, address, WhatsApp number
+   - SEO meta title and description
    - Social media links
-   - WhatsApp number
+   - Hero section content
 
-### 5. Add Content
-Use admin panel to add:
-- Services
-- Portfolio projects
-- Team members
-- Testimonials
-- Pricing plans
-- Blog posts
+## 6. Add Content
 
-## No Installation Required
-Base44 handles:
-- Hosting
-- Database
-- Authentication
-- File storage
-- API endpoints
-- Deployment
+Use the admin panel to add:
 
-Just copy files and start using!
+- Services (with pricing, features, images)
+- Portfolio projects (with tech stacks, images)
+- Blog posts (with rich text editor)
+- Team members (with photos, social links)
+- Client testimonials (with ratings)
+- Pricing plans (with feature lists)
+
+## 7. Deploy
+
+Deploy to Vercel, Netlify, or any static hosting:
+
+```bash
+npm run build
+```
+
+The `dist/` folder contains the production build. `vercel.json` is included for Vercel SPA routing.

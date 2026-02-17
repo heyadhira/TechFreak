@@ -1,17 +1,33 @@
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
-    Phone, MessageCircle, Mail,
+    Phone, MessageCircle, Mail, MapPin,
     Facebook, Twitter, Instagram, Linkedin
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { localClient } from '@/api/localClient';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import Navbar from './components/ui/Navbar';
+import SEO from './components/SEO';
+import StructuredData, { getOrganizationData, getWebsiteData, getLocalBusinessData } from './components/StructuredData';
 import { navLinks } from './constants';
 import { cn } from './lib/utils';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function Layout({ children, currentPageName }) {
+    const { settings } = useSiteSettings();
     const isAdminPage = currentPageName?.startsWith('Admin');
     const isHomePage = currentPageName === 'Home';
+
+    const { data: services } = useQuery({
+        queryKey: ['services'],
+        queryFn: () => localClient.get('/services'),
+        initialData: []
+    });
+
+    const activeServices = services?.filter(s => s.is_active !== false)?.slice(0, 5) || [];
+
+    const generateSlug = (title) => title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
 
     if (isAdminPage) {
         return <>{children}</>;
@@ -19,6 +35,14 @@ export default function Layout({ children, currentPageName }) {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+            {/* Per-page SEO meta tags */}
+            <SEO pageName={currentPageName} />
+
+            {/* Global structured data (Organization + Website) */}
+            <StructuredData data={getOrganizationData()} />
+            <StructuredData data={getWebsiteData()} />
+            {isHomePage && <StructuredData data={getLocalBusinessData()} />}
+
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
         
@@ -54,7 +78,7 @@ export default function Layout({ children, currentPageName }) {
                             <Link to={createPageUrl('Home')} className="flex items-center gap-2 mb-4">
                                 <img src="/img/logo.png" alt="TechFreak" className="w-10 h-10 rounded-xl object-cover" />
                                 <span className="text-2xl font-bold">
-                                    Tech<span className="text-indigo-400">Freak</span>
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Tech</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">Freak</span>
                                 </span>
                             </Link>
                             <p className="text-slate-400 mb-6 leading-relaxed">
@@ -102,16 +126,29 @@ export default function Layout({ children, currentPageName }) {
                         <div>
                             <h4 className="font-bold text-lg mb-4">Services</h4>
                             <ul className="space-y-3">
-                                {['Website Development', 'E-Commerce', 'SEO Services', 'UI/UX Design', 'Web Applications'].map((service) => (
-                                    <li key={service}>
-                                        <Link
-                                            to={createPageUrl('Services')}
-                                            className="text-slate-400 hover:text-white transition-colors"
-                                        >
-                                            {service}
-                                        </Link>
-                                    </li>
-                                ))}
+                                {activeServices.length > 0 ? (
+                                    activeServices.map((service) => (
+                                        <li key={service.id}>
+                                            <Link
+                                                to={`/ServiceDetail?slug=${service.slug || generateSlug(service.title)}`}
+                                                className="text-slate-400 hover:text-white transition-colors"
+                                            >
+                                                {service.title}
+                                            </Link>
+                                        </li>
+                                    ))
+                                ) : (
+                                    ['Website Development', 'E-Commerce', 'SEO Services', 'UI/UX Design', 'Web Applications'].map((service) => (
+                                        <li key={service}>
+                                            <Link
+                                                to={createPageUrl('Services')}
+                                                className="text-slate-400 hover:text-white transition-colors"
+                                            >
+                                                {service}
+                                            </Link>
+                                        </li>
+                                    ))
+                                )}
                             </ul>
                         </div>
 
@@ -122,16 +159,16 @@ export default function Layout({ children, currentPageName }) {
                                 <li className="flex items-start gap-3">
                                     <Phone className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <a href="tel:+919876543210" className="text-slate-400 hover:text-white transition-colors">
-                                            +91 98765 43210
+                                        <a href={`tel:${settings.phone?.replace(/[^0-9+]/g, '')}`} className="text-slate-400 hover:text-white transition-colors">
+                                            {settings.phone}
                                         </a>
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-3">
                                     <Mail className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <a href="mailto:hello@techfreak.in" className="text-slate-400 hover:text-white transition-colors">
-                                            hello@techfreak.in
+                                        <a href={`mailto:${settings.email}`} className="text-slate-400 hover:text-white transition-colors">
+                                            {settings.email}
                                         </a>
                                     </div>
                                 </li>
@@ -139,14 +176,20 @@ export default function Layout({ children, currentPageName }) {
                                     <MessageCircle className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
                                     <div>
                                         <a
-                                            href="https://wa.me/919876543210"
+                                            href={`https://wa.me/${settings.whatsapp}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-slate-400 hover:text-white transition-colors"
                                         >
-                                            WhatsApp Chat
+                                            Chat on WhatsApp
                                         </a>
                                     </div>
+                                </li>
+                                <li className="flex items-start gap-3">
+                                    <MapPin className="w-5 h-5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                                    <span className="text-slate-400">
+                                        {settings.address}
+                                    </span>
                                 </li>
                             </ul>
                         </div>

@@ -129,9 +129,9 @@ async function handleGet(endpoint) {
     if (parsed.type === 'list') {
         let query = supabase.from(parsed.table).select('*');
 
-        // Apply default filters
+        // Apply default filters (skip if ?active=all is passed — admin needs all records)
         const defaultFilter = tableDefaultFilters[parsed.table];
-        if (defaultFilter) {
+        if (defaultFilter && parsed.params?.active !== 'all') {
             query = query.eq(defaultFilter.column, defaultFilter.value);
         }
 

@@ -1,13 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function WhatsAppButton({
-    phoneNumber = '919876543210',
+    phoneNumber,
     message = "Hi! I'm interested in your web development services.",
     className = ''
 }) {
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    const { settings } = useSiteSettings();
+    const activePhoneNumber = phoneNumber || settings.whatsapp || '919876543210';
+
+    const whatsappUrl = `https://wa.me/${activePhoneNumber}?text=${encodeURIComponent(message)}`;
 
     return (
         <motion.a

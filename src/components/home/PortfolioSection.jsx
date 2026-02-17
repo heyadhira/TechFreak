@@ -31,7 +31,7 @@ export default function PortfolioSection() {
 
     const filteredProjects = activeFilter === 'all'
         ? displayProjects
-        : displayProjects.filter(p => p.category === activeFilter);
+        : displayProjects.filter(p => p.category?.toLowerCase() === activeFilter.toLowerCase());
 
     return (
         <section className="py-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
