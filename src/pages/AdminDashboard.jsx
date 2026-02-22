@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
@@ -7,201 +7,197 @@ import { localClient } from '@/api/localClient';
 import { useAdminAuth } from '@/lib/AdminAuthContext';
 import {
     LayoutDashboard, Briefcase, FolderOpen, FileText, Users, Star, CreditCard, Settings, Mail,
-    TrendingUp, ArrowRight
+    TrendingUp, ArrowRight, Activity, Terminal, Shield, Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
 import AnimatedCounter from '../components/ui/AnimatedCounter';
 import AdminLayout from '../components/admin/AdminLayout';
+import Magnetic from '../components/ui/Magnetic';
+import GlassCard from '../components/ui/GlassCard';
 
-const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', page: 'AdminDashboard' },
-    { icon: Briefcase, label: 'Services', page: 'AdminServices' },
-    { icon: FolderOpen, label: 'Portfolio', page: 'AdminPortfolio' },
-    { icon: FileText, label: 'Blog Posts', page: 'AdminBlog' },
-    { icon: Users, label: 'Team', page: 'AdminTeam' },
-    { icon: Star, label: 'Testimonials', page: 'AdminTestimonials' },
-    { icon: CreditCard, label: 'Pricing Plans', page: 'AdminPricing' },
-    { icon: Mail, label: 'Leads', page: 'AdminLeads' },
-    { icon: Settings, label: 'Settings', page: 'AdminSettings' }
-];
+function MetricModule({ label, value, icon: Icon, color }) {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const rotateX = useTransform(y, [-0.5, 0.5], [10, -10]);
+    const rotateY = useTransform(x, [-0.5, 0.5], [-10, 10]);
+    const springX = useSpring(rotateX, { stiffness: 100, damping: 20 });
+    const springY = useSpring(rotateY, { stiffness: 100, damping: 20 });
+
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        x.set((e.clientX - rect.left) / rect.width - 0.5);
+        y.set((e.clientY - rect.top) / rect.height - 0.5);
+    };
+
+    return (
+        <motion.div
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => { x.set(0); y.set(0); }}
+            style={{
+                rotateX: springX,
+                rotateY: springY,
+                transformStyle: "preserve-3d",
+                perspective: 1000
+            }}
+            className="group"
+        >
+            <GlassCard
+                className="h-full p-8 bg-slate-900/40 border border-white/5 rounded-[2.5rem] transition-all duration-500 group-hover:bg-indigo-600/5 group-hover:border-indigo-500/30"
+                glowColor="rgba(99, 102, 241, 0.1)"
+            >
+                <div style={{ transform: "translateZ(30px)" }}>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center shadow-2xl`}>
+                            <Icon className="w-7 h-7 text-white" />
+                        </div>
+                        <Activity className="w-5 h-5 text-indigo-500 animate-pulse" />
+                    </div>
+                    <p className="text-4xl font-black text-white tracking-tighter mb-2">
+                        <AnimatedCounter end={value} duration={2} />
+                    </p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-400 transition-colors">
+                        {label}
+                    </p>
+                </div>
+            </GlassCard>
+        </motion.div>
+    );
+}
 
 export default function AdminDashboard() {
-    const { adminLogout } = useAdminAuth();
-    const navigate = useNavigate();
-
-    const { data: leadsResponse } = useQuery({
-        queryKey: ['admin-leads-recent'],
-        queryFn: () => localClient.get('/leads'),
-        refetchInterval: 10000,
-    });
-
-    const { data: servicesResponse } = useQuery({
-        queryKey: ['admin-services-list'],
-        queryFn: () => localClient.get('/services'),
-        refetchInterval: 30000,
-    });
-
-    const { data: portfolioResponse } = useQuery({
-        queryKey: ['admin-portfolio-list'],
-        queryFn: () => localClient.get('/portfolio'),
-        refetchInterval: 30000,
-    });
-
-    const { data: postsResponse } = useQuery({
-        queryKey: ['admin-posts-list'],
-        queryFn: () => localClient.get('/posts'),
-        refetchInterval: 30000,
-    });
-
-    const { data: teamResponse } = useQuery({
-        queryKey: ['admin-team-list'],
-        queryFn: () => localClient.get('/team'),
-        refetchInterval: 30000,
-    });
-
-    const { data: testimonialsResponse } = useQuery({
-        queryKey: ['admin-testimonials-list'],
-        queryFn: () => localClient.get('/testimonials?active=all'),
-        refetchInterval: 30000,
-    });
-
-    const { data: pricingResponse } = useQuery({
-        queryKey: ['admin-pricing-list'],
-        queryFn: () => localClient.get('/pricing'),
-        refetchInterval: 30000,
-    });
-
-    const leads = leadsResponse || [];
-    const services = servicesResponse || [];
-    const portfolio = portfolioResponse || [];
-    const posts = postsResponse || [];
-    const team = teamResponse || [];
-    const testimonials = testimonialsResponse || [];
-    const pricing = pricingResponse || [];
+    const { data: leads = [] } = useQuery({ queryKey: ['admin-leads-recent'], queryFn: () => localClient.get('/leads'), refetchInterval: 10000 });
+    const { data: services = [] } = useQuery({ queryKey: ['admin-services-list'], queryFn: () => localClient.get('/services') });
+    const { data: portfolio = [] } = useQuery({ queryKey: ['admin-portfolio-list'], queryFn: () => localClient.get('/portfolio') });
+    const { data: posts = [] } = useQuery({ queryKey: ['admin-posts-list'], queryFn: () => localClient.get('/posts') });
+    const { data: team = [] } = useQuery({ queryKey: ['admin-team-list'], queryFn: () => localClient.get('/team') });
+    const { data: testimonials = [] } = useQuery({ queryKey: ['admin-testimonials-list'], queryFn: () => localClient.get('/testimonials?active=all') });
 
     const newLeads = leads.filter(l => !l.is_read).length;
 
     const stats = [
-        { label: 'Total Services', value: services.length, icon: Briefcase, color: 'bg-blue-500' },
-        { label: 'Portfolio Items', value: portfolio.length, icon: FolderOpen, color: 'bg-purple-500' },
-        { label: 'Blog Posts', value: posts.length, icon: FileText, color: 'bg-green-500' },
-        { label: 'New Leads', value: newLeads, icon: Mail, color: 'bg-orange-500' },
-        { label: 'Team Members', value: team.length, icon: Users, color: 'bg-indigo-500' },
-        { label: 'Testimonials', value: testimonials.length, icon: Star, color: 'bg-yellow-500' },
-        { label: 'Pricing Plans', value: pricing.length, icon: CreditCard, color: 'bg-pink-500' },
+        { label: 'Active Modules', value: services.length, icon: Briefcase, color: 'bg-blue-600' },
+        { label: 'Total Deployments', value: portfolio.length, icon: FolderOpen, color: 'bg-purple-600' },
+        { label: 'Intelligence Posts', value: posts.length, icon: FileText, color: 'bg-green-600' },
+        { label: 'New Transmissions', value: newLeads, icon: Mail, color: 'bg-orange-600' },
+        { label: 'Lead Architects', value: team.length, icon: Users, color: 'bg-indigo-600' },
+        { label: 'Verified Signals', value: testimonials.length, icon: Star, color: 'bg-amber-600' }
     ];
 
-    const handleLogout = () => {
-        adminLogout();
-        navigate(createPageUrl('AdminLogin'));
-    };
-
     return (
-        <AdminLayout currentPage="AdminDashboard" title="Dashboard">
-            <div className="mb-8">
-                <p className="text-slate-600 dark:text-slate-400">Welcome back! Here's your overview.</p>
+        <AdminLayout currentPage="AdminDashboard" title="Intelligence Hub">
+            {/* System Status Banner */}
+            <div className="mb-12 flex items-center gap-6 p-6 bg-indigo-600/5 border border-indigo-500/20 rounded-3xl backdrop-blur-3xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-full bg-indigo-500/10 blur-3xl group-hover:w-full transition-all duration-1000" />
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg relative z-10">
+                    <Shield className="w-6 h-6 text-white" />
+                </div>
+                <div className="relative z-10">
+                    <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1">System Operational / High Fidelity</h3>
+                    <p className="text-xs text-slate-400 font-medium">All digital architectures are humming at peak performance.</p>
+                </div>
+                <div className="ml-auto hidden md:flex items-center gap-8 relative z-10 px-8">
+                    <div className="flex flex-col items-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Latency</span>
+                        <span className="text-xs font-black text-green-400">42ms</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Load</span>
+                        <span className="text-xs font-black text-indigo-400">0.08</span>
+                    </div>
+                </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+            {/* Metric Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-16">
                 {stats.map((stat, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800"
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center shadow-lg shadow-${stat.color.split('-')[1]}-500/20`}>
-                                <stat.icon className="w-6 h-6 text-white" />
-                            </div>
-                            <TrendingUp className="w-5 h-5 text-green-500" />
-                        </div>
-                        <p className="text-3xl font-bold text-slate-900 dark:text-white">
-                            <AnimatedCounter end={stat.value} />
-                        </p>
-                        <p className="text-slate-600 dark:text-slate-400">{stat.label}</p>
-                    </motion.div>
+                    <MetricModule key={index} {...stat} />
                 ))}
             </div>
 
-            {/* Recent Leads */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recent Leads</h2>
-                    <Link to={createPageUrl('AdminLeads')} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center gap-1 text-sm font-medium">
-                        View All <ArrowRight className="w-4 h-4" />
-                    </Link>
+            {/* Transmission Grid (Leads) */}
+            <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[3rem] border border-white/5 overflow-hidden mb-16 shadow-2xl">
+                <div className="p-10 border-b border-white/5 flex justify-between items-center bg-white/5">
+                    <div className="flex items-center gap-4">
+                        <Zap className="w-6 h-6 text-indigo-400" />
+                        <h2 className="text-2xl font-black text-white uppercase tracking-tighter italic">Recent Transmissions</h2>
+                    </div>
+                    <Magnetic strength={0.2}>
+                        <Link to={createPageUrl('AdminLeads')} className="px-6 py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2">
+                            Access Full Archive <ArrowRight className="w-4 h-4" />
+                        </Link>
+                    </Magnetic>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Service</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                        <thead>
+                            <tr className="bg-white/2">
+                                <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Source</th>
+                                <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Contact</th>
+                                <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Requested Module</th>
+                                <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-10 py-6 text-left text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Timestamp</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-white/5">
                             {leads.slice(0, 5).map((lead) => (
-                                <tr key={lead.id} className={`${!lead.is_read ? 'bg-indigo-50/50 dark:bg-indigo-500/5' : ''} hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors`}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+                                <tr key={lead.id} className={`${!lead.is_read ? 'bg-indigo-600/10' : ''} hover:bg-white/5 transition-colors group cursor-default`}>
+                                    <td className="px-10 py-8">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg group-hover:scale-110 transition-transform">
                                                 {lead.name?.charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="font-medium text-slate-900 dark:text-white">{lead.name}</span>
+                                            <span className="font-black text-white tracking-tight">{lead.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">{lead.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">{lead.service_interested || '-'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${lead.status === 'new' ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400' :
-                                            lead.status === 'contacted' ? 'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400' :
-                                                lead.status === 'won' ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' :
-                                                    'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                                            }`}>
-                                            {lead.status || 'new'}
+                                    <td className="px-10 py-8 text-sm text-slate-400 font-medium group-hover:text-white transition-colors">{lead.email}</td>
+                                    <td className="px-10 py-8">
+                                        <span className="px-4 py-1.5 bg-white/5 border border-white/5 rounded-full text-[10px] text-indigo-400 font-black uppercase tracking-widest">
+                                            {lead.service_interested || 'General Query'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-600 dark:text-slate-400">
+                                    <td className="px-10 py-8">
+                                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${lead.status === 'new' ? 'bg-indigo-600/20 border-indigo-500/30 text-indigo-400' :
+                                                lead.status === 'contacted' ? 'bg-amber-600/20 border-amber-500/30 text-amber-400' :
+                                                    lead.status === 'won' ? 'bg-green-600/20 border-green-500/30 text-green-400' :
+                                                        'bg-slate-500/20 border-slate-500/30 text-slate-400'
+                                            }`}>
+                                            {lead.status || 'Received'}
+                                        </span>
+                                    </td>
+                                    <td className="px-10 py-8 text-[10px] font-black text-slate-600 uppercase tracking-widest">
                                         {lead.created_at && format(new Date(lead.created_at), 'MMM d, yyyy')}
                                     </td>
                                 </tr>
                             ))}
-                            {leads.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
-                                        No leads yet. They'll appear here when visitors contact you.
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="grid md:grid-cols-3 gap-6 mt-8">
-                <Link to={createPageUrl('AdminServices')} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 transition-all group">
-                    <Briefcase className="w-10 h-10 text-blue-500 mb-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Manage Services</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Add or edit your service offerings</p>
-                </Link>
-                <Link to={createPageUrl('AdminPortfolio')} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 transition-all group">
-                    <FolderOpen className="w-10 h-10 text-purple-500 mb-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Add Portfolio</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Showcase your latest projects</p>
-                </Link>
-                <Link to={createPageUrl('AdminBlog')} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm hover:shadow-md border border-slate-200 dark:border-slate-800 transition-all group">
-                    <FileText className="w-10 h-10 text-green-500 mb-4" />
-                    <h3 className="font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Write Blog Post</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Share your expertise</p>
-                </Link>
+            {/* Tactical Operations (Quick Actions) */}
+            <div className="grid md:grid-cols-3 gap-8">
+                {[
+                    { link: 'AdminServices', icon: Briefcase, color: 'text-blue-500', title: 'Modular Config', desc: 'Sync engineering units' },
+                    { link: 'AdminPortfolio', icon: FolderOpen, color: 'text-purple-500', title: 'Deployment Archive', desc: 'Seal new impact records' },
+                    { link: 'AdminBlog', icon: FileText, color: 'text-green-500', title: 'Intelligence Feed', desc: 'Broadcast strategic briefs' }
+                ].map((action, i) => (
+                    <Link key={i} to={createPageUrl(action.link)}>
+                        <Magnetic strength={0.1}>
+                            <div className="bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-10 border border-white/5 hover:bg-indigo-600/5 hover:border-indigo-500/30 transition-all group flex items-start gap-6">
+                                <div className={`w-16 h-16 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center group-hover:bg-indigo-600 group-hover:border-indigo-500 transition-all duration-500`}>
+                                    <action.icon className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black text-white group-hover:text-indigo-400 transition-colors uppercase tracking-widest mb-1 italic">
+                                        {action.title}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">{action.desc}</p>
+                                </div>
+                            </div>
+                        </Magnetic>
+                    </Link>
+                ))}
             </div>
         </AdminLayout>
     );

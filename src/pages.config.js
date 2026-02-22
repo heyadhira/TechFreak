@@ -65,6 +65,8 @@ import AdminTeam from './pages/AdminTeam';
 import AdminTestimonials from './pages/AdminTestimonials';
 import AdminPricing from './pages/AdminPricing';
 import AdminSettings from './pages/AdminSettings';
+import AppPrivacy from './pages/AppPrivacy';
+import AppTerms from './pages/AppTerms';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +89,8 @@ export const PAGES = {
     "AdminTestimonials": AdminTestimonials,
     "AdminPricing": AdminPricing,
     "AdminSettings": AdminSettings,
+    "privacy-policy": AppPrivacy,
+    "terms-of-service": AppTerms,
 }
 
 export const pagesConfig = {

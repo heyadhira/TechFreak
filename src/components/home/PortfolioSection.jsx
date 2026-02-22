@@ -1,22 +1,89 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { localClient } from '@/api/localClient';
-import { ExternalLink, ArrowRight } from 'lucide-react';
+import { ExternalLink, ArrowRight, Eye, Briefcase, Zap } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading';
 import GradientButton from '../ui/GradientButton';
+import Magnetic from '../ui/Magnetic';
 
 const categories = [
-    { id: 'all', label: 'All Projects' },
-    { id: 'e-commerce', label: 'E-Commerce' },
-    { id: 'corporate', label: 'Corporate' },
-    { id: 'startup', label: 'Startup' },
-    { id: 'educational', label: 'Educational' }
+    { id: 'all', label: 'All Deployments' },
+    { id: 'e-commerce', label: 'Commerce' },
+    { id: 'corporate', label: 'Enterprise' },
+    { id: 'startup', label: 'Disruptive' }
 ];
 
+function InteractiveProjectCard({ project, index }) {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const rotateX = useTransform(y, [-0.5, 0.5], [8, -8]);
+    const rotateY = useTransform(x, [-0.5, 0.5], [-8, 8]);
+    const springX = useSpring(rotateX, { stiffness: 150, damping: 20 });
+    const springY = useSpring(rotateY, { stiffness: 150, damping: 20 });
 
+    const handleMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        x.set((e.clientX - rect.left) / rect.width - 0.5);
+        y.set((e.clientY - rect.top) / rect.height - 0.5);
+    };
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => { x.set(0); y.set(0); }}
+            style={{
+                rotateX: springX,
+                rotateY: springY,
+                transformStyle: "preserve-3d",
+                perspective: 1000
+            }}
+            className="group"
+        >
+            <div className="relative bg-slate-900/60 backdrop-blur-3xl border border-white/5 rounded-[3rem] overflow-hidden transition-all duration-500 group-hover:bg-indigo-600/5 group-hover:border-indigo-500/30 group-hover:shadow-2xl">
+                <div className="relative aspect-[4/3] overflow-hidden" style={{ transform: "translateZ(40px)" }}>
+                    <img
+                        src={project.thumbnail_url}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale group-hover:grayscale-0"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-40 transition-opacity duration-700" />
+
+                    <div className="absolute top-8 left-8 flex flex-wrap gap-3">
+                        {project.tech_stack?.slice(0, 2).map((tech, i) => (
+                            <span key={i} className="px-4 py-1.5 bg-white/10 backdrop-blur-xl border border-white/10 rounded-full text-[10px] font-black uppercase tracking-widest text-white">
+                                {tech}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-10" style={{ transform: "translateZ(20px)" }}>
+                    <div className="flex items-center gap-2 mb-4">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
+                        <span className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.3em]">{project.category?.replace('-', ' ')}</span>
+                    </div>
+                    <h3 className="text-3xl font-black text-white group-hover:text-indigo-400 transition-colors tracking-tighter mb-6 leading-none">
+                        {project.title}
+                    </h3>
+
+                    <Magnetic strength={0.2}>
+                        <Link to={createPageUrl("Portfolio")} className="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-white transition-colors group/link">
+                            Inspect Blueprint
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover/link:translate-x-2" />
+                        </Link>
+                    </Magnetic>
+                </div>
+            </div>
+        </motion.div>
+    );
+}
 
 export default function PortfolioSection() {
     const [activeFilter, setActiveFilter] = useState('all');
@@ -27,115 +94,67 @@ export default function PortfolioSection() {
         initialData: []
     });
 
-    const displayProjects = projects;
-
     const filteredProjects = activeFilter === 'all'
-        ? displayProjects
-        : displayProjects.filter(p => p.category?.toLowerCase() === activeFilter.toLowerCase());
+        ? projects
+        : projects.filter(p => p.category?.toLowerCase() === activeFilter.toLowerCase());
 
     return (
-        <section className="py-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden transition-colors duration-300">
-            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white dark:from-slate-950 to-transparent" />
-
+        <section className="py-32 relative bg-slate-950 overflow-hidden">
             <div className="container mx-auto px-4 relative z-10">
                 <SectionHeading
-                    badge="Our Portfolio"
-                    title="Work That Speaks For Itself"
-                    subtitle="Browse through our recent projects and see the quality we deliver."
-                    className=""
+                    badge="The Deployment Record"
+                    title="Proven Impact"
+                    subtitle="A curated record of high-performance digital transformations deployed globally."
+                    className="mb-24"
                 />
 
-                {/* Filter tabs */}
-                <div className="flex flex-wrap justify-center gap-2 mb-12">
+                {/* Filter tabs - Cinematic */}
+                <div className="flex flex-wrap justify-center gap-4 mb-20 bg-white/5 backdrop-blur-3xl p-4 rounded-[2.5rem] w-max mx-auto border border-white/5">
                     {categories.map((cat) => (
-                        <motion.button
-                            key={cat.id}
-                            onClick={() => setActiveFilter(cat.id)}
-                            className={`px-5 py-2.5 rounded-full font-medium transition-all ${activeFilter === cat.id
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none'
-                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                                }`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            {cat.label}
-                        </motion.button>
+                        <Magnetic key={cat.id} strength={0.2}>
+                            <button
+                                onClick={() => setActiveFilter(cat.id)}
+                                className={`relative px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === cat.id
+                                    ? 'text-white'
+                                    : 'text-slate-500 hover:text-white'
+                                    }`}
+                            >
+                                {activeFilter === cat.id && (
+                                    <motion.div
+                                        layoutId="home-filter-pill"
+                                        className="absolute inset-0 bg-indigo-600 rounded-2xl shadow-lg -z-10 shadow-indigo-600/20"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                                {cat.label}
+                            </button>
+                        </Magnetic>
                     ))}
                 </div>
 
                 {/* Projects grid */}
-                <motion.div
-                    layout
-                    className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
-                >
+                <motion.div layout className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
                     <AnimatePresence mode="popLayout">
-                        {filteredProjects.slice(0, 6).map((project, index) => (
-                            <motion.div
-                                key={project.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ duration: 0.3, delay: index * 0.05 }}
-                                className="group relative bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-800"
-                            >
-                                <div className="relative aspect-[4/3] overflow-hidden">
-                                    <img
-                                        src={project.thumbnail_url}
-                                        alt={project.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                    {/* Overlay content */}
-                                    <div className="absolute inset-0 flex flex-col justify-end p-6 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                        <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {project.tech_stack?.slice(0, 3).map((tech, i) => (
-                                                <span key={i} className="px-2 py-1 bg-white/20 backdrop-blur-sm rounded-md text-white text-xs">
-                                                    {tech}
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {project.project_url && (
-                                            <a
-                                                href={project.project_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-white hover:text-indigo-400 transition-colors"
-                                            >
-                                                <ExternalLink className="w-4 h-4" />
-                                                View Live
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Card footer */}
-                                <div className="p-5">
-                                    <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium capitalize">{project.category?.replace('-', ' ')}</span>
-                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {project.title}
-                                    </h3>
-                                </div>
-                            </motion.div>
+                        {filteredProjects.slice(0, 3).map((project, index) => (
+                            <InteractiveProjectCard key={project.id} project={project} index={index} />
                         ))}
                     </AnimatePresence>
                 </motion.div>
 
                 <motion.div
-                    className="text-center mt-12"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    className="text-center mt-24"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
                 >
-                    <Link to={createPageUrl("Portfolio")}>
-                        <GradientButton variant="primary">
-                            View All Projects
-                            <ArrowRight className="w-5 h-5" />
-                        </GradientButton>
-                    </Link>
+                    <Magnetic strength={0.3}>
+                        <Link to={createPageUrl("Portfolio")}>
+                            <GradientButton variant="primary" className="h-20 px-16 rounded-[2rem] font-black text-lg group">
+                                View Full Archive
+                                <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform" />
+                            </GradientButton>
+                        </Link>
+                    </Magnetic>
                 </motion.div>
             </div>
         </section>

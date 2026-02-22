@@ -34,10 +34,15 @@ export function getOrganizationData() {
     return {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "TechFreak",
+        "name": "techfreak.in",
         "url": "https://techfreak.in",
-        "logo": "https://techfreak.in/img/logo.png",
-        "description": "Premium web development agency offering affordable, high-performance websites for Indian businesses.",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://techfreak.in/img/logo.png",
+            "width": "512",
+            "height": "512"
+        },
+        "description": "Elite web development agency in India. We build high-performance, creative websites starting at ₹4,999. Specializing in Next-gen UI/UX, E-commerce, and SEO optimization.",
         "foundingDate": "2024",
         "contactPoint": {
             "@type": "ContactPoint",
@@ -48,6 +53,8 @@ export function getOrganizationData() {
         },
         "address": {
             "@type": "PostalAddress",
+            "addressLocality": "India",
+            "addressRegion": "National",
             "addressCountry": "IN"
         },
         "sameAs": [
@@ -63,7 +70,7 @@ export function getWebsiteData() {
     return {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        "name": "TechFreak",
+        "name": "techfreak.in",
         "url": "https://techfreak.in",
         "potentialAction": {
             "@type": "SearchAction",
@@ -77,14 +84,15 @@ export function getLocalBusinessData() {
     return {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
-        "name": "TechFreak",
+        "name": "techfreak.in",
         "url": "https://techfreak.in",
         "image": "https://techfreak.in/img/logo.png",
         "telephone": "+91-98765-43210",
         "email": "hello@techfreak.in",
-        "priceRange": "₹₹",
+        "priceRange": "₹4999 - ₹99999",
         "address": {
             "@type": "PostalAddress",
+            "addressLocality": "India",
             "addressCountry": "IN"
         },
         "aggregateRating": {
@@ -93,12 +101,14 @@ export function getLocalBusinessData() {
             "reviewCount": "150",
             "bestRating": "5"
         },
-        "openingHoursSpecification": {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-            "opens": "09:00",
-            "closes": "18:00"
-        }
+        "openingHoursSpecification": [
+            {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+                "opens": "09:00",
+                "closes": "21:00"
+            }
+        ]
     };
 }
 

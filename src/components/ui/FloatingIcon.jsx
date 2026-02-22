@@ -6,7 +6,8 @@ export default function FloatingIcon({
     icon: Icon,
     className,
     delay = 0,
-    size = 'default'
+    size = 'default',
+    ...props
 }) {
     const sizeClasses = {
         sm: 'w-8 h-8 p-1.5',
@@ -37,6 +38,7 @@ export default function FloatingIcon({
                     ease: "easeInOut"
                 }
             }}
+            {...props}
         >
             <Icon className="w-full h-full" />
         </motion.div>

@@ -25,7 +25,7 @@ export default function Layout({ children, currentPageName }) {
         initialData: []
     });
 
-    const activeServices = services?.filter(s => s.is_active !== false)?.slice(0, 5) || [];
+    const activeServices = (services || [])?.filter(s => s.is_active !== false)?.slice(0, 5) || [];
 
     const generateSlug = (title) => title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '';
 
@@ -76,13 +76,13 @@ export default function Layout({ children, currentPageName }) {
                         {/* Brand */}
                         <div>
                             <Link to={createPageUrl('Home')} className="flex items-center gap-2 mb-4">
-                                <img src="/img/logo.png" alt="TechFreak" className="w-10 h-10 rounded-xl object-cover" />
+                                <img src="/img/logo.png" alt="techfreak.in" className="w-10 h-10 rounded-xl object-cover" />
                                 <span className="text-2xl font-bold">
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500">Tech</span><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500">Freak</span>
+                                    <span className="text-white">techfreak</span><span className="text-indigo-500">.in</span>
                                 </span>
                             </Link>
                             <p className="text-slate-400 mb-6 leading-relaxed">
-                                Premium web development services for Indian businesses. Best quality at the best price.
+                                Elite web development agency in India. We build high-performance, creative websites starting at ₹4,999.
                             </p>
                             <div className="flex gap-3">
                                 {[
@@ -198,11 +198,11 @@ export default function Layout({ children, currentPageName }) {
                     {/* Bottom bar */}
                     <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-slate-500 text-sm">
-                            © {new Date().getFullYear()} TechFreak. All rights reserved.
+                            © {new Date().getFullYear()} techfreak.in. All rights reserved.
                         </p>
                         <div className="flex gap-6 text-sm text-slate-500">
-                            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-                            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+                            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                            <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
                         </div>
                     </div>
                 </div>

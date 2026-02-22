@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { ArrowRight, Code2, Globe, Zap, Sparkles, Rocket } from 'lucide-react';
@@ -10,9 +10,14 @@ export default function HeroSection() {
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
+    // ... imports
     const springConfig = { damping: 25, stiffness: 150 };
     const spotlightX = useSpring(mouseX, springConfig);
     const spotlightY = useSpring(mouseY, springConfig);
+
+    // 3D Tilt rotations
+    const rotateX = useTransform(spotlightY, [0, window.innerHeight], [5, -5]);
+    const rotateY = useTransform(spotlightX, [0, window.innerWidth], [-5, 5]);
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -24,7 +29,7 @@ export default function HeroSection() {
     }, [mouseX, mouseY]);
 
     return (
-        <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 group">
+        <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 group perspective-1000">
             {/* Spotlight effect */}
             <motion.div
                 className="pointer-events-none absolute -inset-px z-30 transition-opacity duration-300 opacity-0 group-hover:opacity-100"
@@ -55,23 +60,31 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
             </div>
 
-            {/* Floating icons */}
-            <FloatingIcon icon={Code2} className="top-32 left-[10%] text-blue-400" delay={0.2} />
-            <FloatingIcon icon={Globe} className="top-48 right-[15%] text-purple-400" delay={0.4} />
-            <FloatingIcon icon={Zap} className="bottom-32 left-[20%] text-amber-400" delay={0.6} />
-            <FloatingIcon icon={Sparkles} className="top-60 left-[70%] text-pink-400" delay={0.8} />
-            <FloatingIcon icon={Rocket} className="bottom-48 right-[10%] text-green-400" delay={1} />
+            {/* Floating icons with parallax */}
+            <FloatingIcon icon={Code2} className="top-32 left-[10%] text-blue-400" delay={0.2} style={{ translateX: useTransform(spotlightX, [0, window.innerWidth], [20, -20]), translateY: useTransform(spotlightY, [0, window.innerHeight], [20, -20]) }} />
+            <FloatingIcon icon={Globe} className="top-48 right-[15%] text-purple-400" delay={0.4} style={{ translateX: useTransform(spotlightX, [0, window.innerWidth], [-30, 30]), translateY: useTransform(spotlightY, [0, window.innerHeight], [-30, 30]) }} />
+            <FloatingIcon icon={Zap} className="bottom-32 left-[20%] text-amber-400" delay={0.6} style={{ translateX: useTransform(spotlightX, [0, window.innerWidth], [25, -25]), translateY: useTransform(spotlightY, [0, window.innerHeight], [-25, 25]) }} />
+            <FloatingIcon icon={Sparkles} className="top-60 left-[70%] text-pink-400" delay={0.8} style={{ translateX: useTransform(spotlightX, [0, window.innerWidth], [-15, 15]), translateY: useTransform(spotlightY, [0, window.innerHeight], [15, -15]) }} />
+            <FloatingIcon icon={Rocket} className="bottom-48 right-[10%] text-green-400" delay={1} style={{ translateX: useTransform(spotlightX, [0, window.innerWidth], [-40, 40]), translateY: useTransform(spotlightY, [0, window.innerHeight], [-40, 40]) }} />
 
-            <div className="relative z-10 container mx-auto px-4 py-20">
-                <div className="max-w-5xl mx-auto text-center">
+            <div className="relative z-10 container mx-auto px-4 py-20" style={{ perspective: "1000px" }}>
+                <motion.div
+                    className="max-w-5xl mx-auto text-center transform-gpu"
+                    style={{
+                        rotateX,
+                        rotateY,
+                        transformStyle: "preserve-3d",
+                    }}
+                >
                     {/* Badge */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         className="mb-6"
+                        style={{ transform: "translateZ(60px)" }}
                     >
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/10 text-white/90 text-sm font-medium backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-white/10 text-white/90 text-sm font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                             <Sparkles className="w-4 h-4 text-amber-400" />
                             Premium Web Development Agency
                         </span>
@@ -83,10 +96,11 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.1 }}
                         className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
+                        style={{ transform: "translateZ(40px)" }}
                     >
                         Build Your Dream Website
                         <br />
-                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">
                             Starting at ₹4,999
                         </span>
                     </motion.h1>
@@ -97,6 +111,7 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="text-lg md:text-xl text-white/70 mb-8 max-w-2xl mx-auto leading-relaxed"
+                        style={{ transform: "translateZ(30px)" }}
                     >
                         Transform your business with stunning, high-performance websites.
                         Best quality at the best price — trusted by 150+ Indian businesses.
@@ -108,15 +123,16 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="flex flex-wrap justify-center gap-4 mb-12"
+                        style={{ transform: "translateZ(50px)" }}
                     >
                         <Link to={createPageUrl("Contact")}>
-                            <GradientButton variant="secondary" size="lg">
+                            <GradientButton variant="secondary" size="lg" className="shadow-[0_0_20px_rgba(59,130,246,0.4)]">
                                 Get Free Quote
                                 <ArrowRight className="w-5 h-5" />
                             </GradientButton>
                         </Link>
                         <Link to={createPageUrl("Portfolio")}>
-                            <GradientButton variant="ghost" size="lg">
+                            <GradientButton variant="ghost" size="lg" className="backdrop-blur-md bg-white/5 hover:bg-white/10 border-white/10">
                                 View Our Work
                             </GradientButton>
                         </Link>
@@ -128,6 +144,7 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.4 }}
                         className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-3xl mx-auto"
+                        style={{ transform: "translateZ(20px)" }}
                     >
                         {[
                             { value: "150+", label: "Projects Delivered" },
@@ -135,13 +152,13 @@ export default function HeroSection() {
                             { value: "2+", label: "Years Experience" },
                             { value: "24/7", label: "Support Available" }
                         ].map((stat, i) => (
-                            <div key={i} className="text-center">
+                            <div key={i} className="text-center p-4 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-sm">
                                 <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
                                 <div className="text-sm text-white/60">{stat.label}</div>
                             </div>
                         ))}
                     </motion.div>
-                </div>
+                </motion.div>
             </div>
 
             {/* Bottom gradient */}

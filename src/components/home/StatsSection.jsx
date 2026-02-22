@@ -1,76 +1,77 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Briefcase, Award, Clock } from 'lucide-react';
+import { Users, Briefcase, Award, Clock, Zap, Target, Rocket, Activity } from 'lucide-react';
 import AnimatedCounter from '../ui/AnimatedCounter';
+import Magnetic from '../ui/Magnetic';
 
 const stats = [
     {
-        icon: Briefcase,
+        icon: Rocket,
         value: 150,
         suffix: "+",
-        label: "Projects Completed",
-        color: "from-blue-500 to-indigo-600"
+        label: "Architectures Deployed",
+        color: "bg-indigo-600"
     },
     {
         icon: Users,
         value: 135,
         suffix: "+",
-        label: "Happy Clients",
-        color: "from-purple-500 to-pink-600"
+        label: "Visionary Partners",
+        color: "bg-purple-600"
     },
     {
-        icon: Award,
+        icon: Target,
         value: 98,
         suffix: "%",
-        label: "Client Satisfaction",
-        color: "from-amber-500 to-orange-600"
+        label: "Strategic Success",
+        color: "bg-blue-600"
     },
     {
-        icon: Clock,
+        icon: Activity,
         value: 2,
         suffix: "+",
-        label: "Years Experience",
-        color: "from-green-500 to-emerald-600"
+        label: "Years of Velocity",
+        color: "bg-pink-600"
     }
 ];
 
 export default function StatsSection() {
     return (
-        <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 relative overflow-hidden">
+        <section className="py-32 bg-slate-950 relative overflow-hidden">
             {/* Background elements */}
             <div className="absolute inset-0">
-                <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
+                <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[150px]" />
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
                     {stats.map((stat, index) => (
                         <motion.div
                             key={index}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-50px" }}
-                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.8, delay: index * 0.1 }}
                             className="text-center group"
                         >
-                            <motion.div
-                                className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}
-                                whileHover={{ scale: 1.1, rotate: 5 }}
-                                transition={{ type: "spring", stiffness: 300 }}
-                            >
-                                <stat.icon className="w-8 h-8 text-white" />
-                            </motion.div>
+                            <Magnetic strength={0.3}>
+                                <motion.div
+                                    className={`w-24 h-24 mx-auto mb-10 rounded-3xl ${stat.color} flex items-center justify-center shadow-2xl shadow-indigo-500/10 group-hover:rotate-12 transition-transform duration-500`}
+                                >
+                                    <stat.icon className="w-10 h-10 text-white" />
+                                </motion.div>
+                            </Magnetic>
 
-                            <div className="text-4xl md:text-5xl font-bold text-white mb-2">
+                            <div className="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter">
                                 <AnimatedCounter
                                     end={stat.value}
                                     suffix={stat.suffix}
-                                    duration={2.5}
+                                    duration={3}
                                 />
                             </div>
 
-                            <p className="text-white/70 font-medium">{stat.label}</p>
+                            <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">{stat.label}</p>
                         </motion.div>
                     ))}
                 </div>

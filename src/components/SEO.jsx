@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 
 const DEFAULT_SEO = {
-    siteName: 'TechFreak',
+    siteName: 'techfreak.in',
     siteUrl: 'https://techfreak.in',
-    defaultTitle: 'TechFreak - Premium Web Development Agency | Websites Starting at ₹4,999',
-    defaultDescription: 'Transform your business with stunning, high-performance websites. TechFreak offers premium web development services for Indian businesses at affordable prices. 150+ projects delivered with 98% client satisfaction.',
+    defaultTitle: 'techfreak.in - Premium Web Development Agency | Websites Starting @ ₹4,999',
+    defaultDescription: 'Transform your business with stunning, high-performance websites. techfreak.in offers elite web development, e-commerce, and SEO services for Indian businesses. Best-in-class UI/UX design starting at ₹4,999.',
     defaultImage: '/img/logo.png',
     twitterHandle: '@techfreak_in',
     locale: 'en_IN',
@@ -12,9 +12,9 @@ const DEFAULT_SEO = {
 
 const PAGE_SEO = {
     Home: {
-        title: 'TechFreak - Premium Web Development Agency | Best Websites in India',
-        description: 'Transform your business with stunning, high-performance websites starting at ₹4,999. Expert web development, e-commerce, SEO & UI/UX design. 150+ projects delivered.',
-        keywords: 'web development agency india, affordable website design, premium websites, e-commerce development, SEO services india, best web developer',
+        title: 'techfreak.in - Best Web Development Agency in India | Creative Websites',
+        description: 'Elite web development agency in India. We build high-performance, creative websites starting at ₹4,999. Specializing in Next-gen UI/UX, E-commerce, and SEO optimization.',
+        keywords: 'best web development agency india, affordable website design india, techfreak.in, creative web design company, next-gen digital agency, e-commerce development india, top seo services',
     },
     Services: {
         title: 'Our Services - Web Development, E-Commerce, SEO & More | TechFreak',
@@ -60,6 +60,16 @@ const PAGE_SEO = {
         title: 'Client Testimonials & Reviews | TechFreak',
         description: 'See what our clients say about TechFreak. Real reviews and testimonials from businesses we\'ve helped with premium web development services.',
         keywords: 'client reviews, testimonials, customer feedback, web development reviews, techfreak reviews',
+    },
+    "privacy-policy": {
+        title: 'Privacy Policy | TechFreak',
+        description: 'Read our Privacy Policy to understand how TechFreak collects, uses, and protects your personal information.',
+        keywords: 'privacy policy, data protection, personal information, techfreak privacy',
+    },
+    "terms-of-service": {
+        title: 'Terms of Service | TechFreak',
+        description: 'Read our Terms of Service to understand the rules and regulations for using TechFreak\'s website and services.',
+        keywords: 'terms of service, terms and conditions, legal, techfreak terms',
     },
 };
 

@@ -1,12 +1,13 @@
 {
-    "short_name": "TechFreak",
-    "name": "TechFreak - Premium Web Development Agency",
-    "description": "Premium web development services for Indian businesses. Websites starting at ₹4,999 with 150+ projects delivered.",
+    "short_name": "techfreak.in",
+    "name": "techfreak.in - Premium Web Development Agency",
+    "description": "Elite web development agency in India. Websites starting @ ₹4,999 with high-performance engineering.",
     "icons": [
         {
             "src": "/img/favicon.png",
             "sizes": "64x64",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "/img/logo.png",

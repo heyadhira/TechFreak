@@ -1,343 +1,216 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useMutation } from '@tanstack/react-query';
-import { localClient } from '@/api/localClient';
+import React from 'react';
+import { motion, useScroll, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { createPageUrl } from '@/utils';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import GlassCard from '../components/ui/GlassCard';
 import GradientButton from '../components/ui/GradientButton';
 import PageHero from '../components/ui/PageHero';
-import { Phone, Mail, MapPin, Clock, Send, MessageCircle, CheckCircle, Loader2, ArrowRight, Megaphone } from 'lucide-react';
-import { toast } from 'sonner';
-
-const services = [
-    "Custom Website Development",
-    "E-Commerce Solutions",
-    "Mobile-First Design",
-    "SEO Optimization",
-    "UI/UX Design",
-    "Web Application Development",
-    "Website Redesign",
-    "Other"
-];
-
-const budgetOptions = [
-    { value: "under-10k", label: "Under ₹10,000" },
-    { value: "10k-25k", label: "₹10,000 - ₹25,000" },
-    { value: "25k-50k", label: "₹25,000 - ₹50,000" },
-    { value: "50k-1lakh", label: "₹50,000 - ₹1,00,000" },
-    { value: "above-1lakh", label: "Above ₹1,00,000" }
-];
+import { Phone, Mail, MapPin, Clock, MessageCircle, ArrowRight, Megaphone, Sparkles, Send } from 'lucide-react';
+import ContactForm from '../components/contact/ContactForm';
+import NoiseTexture from '../components/ui/NoiseTexture';
+import Magnetic from '../components/ui/Magnetic';
 
 const contactInfo = [
-    { icon: Phone, title: "Phone", value: "+91 98765 43210", href: "tel:+919876543210" },
-    { icon: Mail, title: "Email", value: "hello@techfreak.in", href: "mailto:hello@techfreak.in" },
-    { icon: MapPin, title: "Address", value: "Mumbai, Maharashtra, India" },
-    { icon: Clock, title: "Working Hours", value: "Mon - Sat: 10AM - 7PM IST" }
+    { icon: Phone, title: "Direct Call", value: "+91 85959 57070", href: "tel:+918595957070", color: "blue" },
+    { icon: Mail, title: "Official Email", value: "techfreakdotin@gmail.com", href: "mailto:techfreakdotin@gmail.com", color: "indigo" },
+    { icon: MapPin, title: "Our Location", value: "North West, Delhi, India", color: "purple" },
+    { icon: Clock, title: "Support Cycle", value: "Mon - Sat: 10AM - 7PM IST", color: "slate" }
 ];
+
+function ContactInfoCard({ item, index }) {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+
+    const mouseX = useSpring(x, { stiffness: 150, damping: 20 });
+    const mouseY = useSpring(y, { stiffness: 150, damping: 20 });
+
+    const rotateX = useTransform(mouseY, [-0.5, 0.5], [10, -10]);
+    const rotateY = useTransform(mouseX, [-0.5, 0.5], [-10, 10]);
+
+    function handleMouseMove(event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const mouseXRelative = event.clientX - rect.left;
+        const mouseYRelative = event.clientY - rect.top;
+        x.set(mouseXRelative / width - 0.5);
+        y.set(mouseYRelative / height - 0.5);
+    }
+
+    function handleMouseLeave() {
+        x.set(0);
+        y.set(0);
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: index * 0.1 }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{
+                rotateX,
+                rotateY,
+                transformStyle: "preserve-3d",
+                perspective: 1000
+            }}
+            className="group relative h-full"
+        >
+            <div className="h-full bg-white/5 dark:bg-slate-900/40 backdrop-blur-3xl border border-white/10 dark:border-slate-800 p-8 rounded-[2.5rem] flex flex-col items-center text-center transition-all duration-500 group-hover:bg-white/10 group-hover:border-indigo-500/30 overflow-hidden shadow-2xl">
+                <Magnetic strength={0.3}>
+                    <div className="w-20 h-20 rounded-2xl bg-slate-950 flex items-center justify-center mb-8 border border-white/10 shadow-[0_20px_40px_rgba(0,0,0,0.5)] group-hover:shadow-indigo-500/20 transition-all duration-500">
+                        <item.icon className="w-8 h-8 text-indigo-400 group-hover:scale-110 transition-transform" />
+                    </div>
+                </Magnetic>
+
+                <h3 className="text-xl font-black text-white mb-3 tracking-tight" style={{ transform: "translateZ(40px)" }}>{item.title}</h3>
+
+                {item.href ? (
+                    <a href={item.href} className="text-slate-400 dark:text-slate-400 hover:text-white transition-colors font-medium text-sm leading-relaxed" style={{ transform: "translateZ(20px)" }}>
+                        {item.value}
+                    </a>
+                ) : (
+                    <p className="text-slate-400 dark:text-slate-400 font-medium text-sm leading-relaxed" style={{ transform: "translateZ(20px)" }}>
+                        {item.value}
+                    </p>
+                )}
+
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full blur-3xl pointer-events-none" />
+            </div>
+        </motion.div>
+    );
+}
 
 export default function Contact() {
     const urlParams = new URLSearchParams(window.location.search);
     const preSelectedService = urlParams.get('service') || '';
     const preSelectedPlan = urlParams.get('plan') || '';
 
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        service_interested: preSelectedService || preSelectedPlan || '',
-        budget: '',
-        message: ''
+    const { scrollYProgress } = useScroll();
+    const scaleX = useSpring(scrollYProgress, {
+        stiffness: 100,
+        damping: 30,
+        restDelta: 0.001
     });
-    const [submitted, setSubmitted] = useState(false);
-
-    const createLead = useMutation({
-        mutationFn: (data) => localClient.post('/leads', data),
-        onSuccess: () => {
-            setSubmitted(true);
-            toast.success('Message sent successfully!');
-        },
-        onError: () => {
-            toast.error('Failed to send message. Please try again.');
-        }
-    });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!formData.name || !formData.email || !formData.message) {
-            toast.error('Please fill in all required fields');
-            return;
-        }
-        createLead.mutate({
-            ...formData,
-            source: 'contact-form',
-            status: 'new'
-        });
-    };
-
-    const handleChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
 
     return (
-        <div>
+        <main className="relative bg-slate-950 selection:bg-indigo-500/30">
+            <motion.div
+                className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 z-[100] origin-left"
+                style={{ scaleX }}
+            />
+            <NoiseTexture />
+
             <PageHero
-                title="Let's Connect"
+                title="Let's Build Magic"
                 subtitle="Starting at ₹4,999"
-                badge="Available for Projects"
-                badgeIcon={MessageCircle}
-                primaryBtnText="Get Free Quote"
+                badge="Globally Available"
+                badgeIcon={Send}
+                primaryBtnText="Deploy Your Vision"
                 primaryBtnLink="#contact-form"
-                secondaryBtnText="What We Offer"
+                secondaryBtnText="Explore Mastery"
                 secondaryBtnLink={createPageUrl("Services")}
-                showStats={true}
+                showStats={false}
                 floatingIcons={[
-                    { icon: Phone, className: "top-20 left-[10%] text-green-400", delay: 0.2 },
-                    { icon: Mail, className: "top-40 right-[15%] text-blue-400", delay: 0.4 },
+                    { icon: Sparkles, className: "top-20 left-[10%] text-amber-400", delay: 0.2 },
+                    { icon: Send, className: "top-40 right-[15%] text-blue-400", delay: 0.4 },
                     { icon: MessageCircle, className: "bottom-20 left-[20%] text-indigo-400", delay: 0.6 },
-                    { icon: Megaphone, className: "top-32 right-[5%] text-amber-400", delay: 0.8 }
+                    { icon: Megaphone, className: "top-32 right-[5%] text-purple-400", delay: 0.8 }
                 ]}
             />
 
-            {/* Contact Section */}
-            <section className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+            <section className="py-32 relative z-10" id="contact-form">
                 <div className="container mx-auto px-4">
-                    <div className="grid lg:grid-cols-5 gap-12">
-                        {/* Contact Info */}
-                        <div className="lg:col-span-2">
+                    <div className="flex flex-col items-center mb-24 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            className="mb-8"
+                        >
+                            <span className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.3em]">
+                                <MessageCircle className="w-4 h-4 text-indigo-500" />
+                                Interactive Support
+                            </span>
+                        </motion.div>
+                        <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-none">
+                            Connecting Visionaries <br />
+                            <span className="text-indigo-500">To Solutions.</span>
+                        </h2>
+                    </div>
+
+                    <div className="grid lg:grid-cols-12 gap-16 lg:gap-24 mb-32">
+                        <div className="lg:col-span-5 grid grid-cols-1 md:grid-cols-2 gap-6 h-fit">
+                            {contactInfo.map((item, index) => (
+                                <ContactInfoCard key={index} item={item} index={index} />
+                            ))}
+
                             <motion.div
-                                initial={{ opacity: 0, x: -30 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.4 }}
+                                className="md:col-span-2 mt-4"
                             >
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Contact Information</h2>
-
-                                <div className="space-y-6 mb-8">
-                                    {contactInfo.map((item, index) => (
-                                        <div key={index} className="flex items-start gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                                                <item.icon className="w-5 h-5 text-white" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-semibold text-slate-900 dark:text-white">{item.title}</h4>
-                                                {item.href ? (
-                                                    <a href={item.href} className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                                        {item.value}
-                                                    </a>
-                                                ) : (
-                                                    <p className="text-slate-600 dark:text-slate-400">{item.value}</p>
-                                                )}
-                                            </div>
+                                <div className="bg-indigo-600 rounded-[2.5rem] p-10 text-white relative overflow-hidden group shadow-2xl">
+                                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                                        <div className="text-center md:text-left">
+                                            <h4 className="text-3xl font-black mb-2">Instant Response?</h4>
+                                            <p className="text-indigo-100 font-medium">WhatsApp our tech architects now.</p>
                                         </div>
-                                    ))}
-                                </div>
-
-                                {/* WhatsApp CTA */}
-                                <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 text-white">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <MessageCircle className="w-8 h-8" />
-                                        <div>
-                                            <h4 className="font-bold">Quick Response via WhatsApp</h4>
-                                            <p className="text-white/80 text-sm">Get instant replies during business hours</p>
-                                        </div>
+                                        <Magnetic strength={0.4}>
+                                            <a
+                                                href="https://wa.me/918595957070?text=Hi!%20I'm%20interested%20in%20your%20web%20development%20services."
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="h-16 px-10 rounded-2xl bg-white text-indigo-600 font-black flex items-center gap-3 hover:bg-slate-100 transition-colors shadow-xl"
+                                            >
+                                                <MessageCircle className="w-6 h-6" />
+                                                Live Chat
+                                            </a>
+                                        </Magnetic>
                                     </div>
-                                    <a
-                                        href="https://wa.me/919876543210?text=Hi!%20I'm%20interested%20in%20your%20web%20development%20services."
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block"
-                                    >
-                                        <GradientButton variant="ghost" className="w-full bg-white/20 border-white/30 hover:bg-white/30">
-                                            Chat on WhatsApp
-                                            <ArrowRight className="w-4 h-4" />
-                                        </GradientButton>
-                                    </a>
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-1000" />
                                 </div>
                             </motion.div>
                         </div>
 
-                        {/* Contact Form */}
-                        <div className="lg:col-span-3">
-                            <motion.div
-                                initial={{ opacity: 0, x: 30 }}
-                                whileInView={{ opacity: 1, x: 0 }}
-                                viewport={{ once: true }}
-                            >
-                                <GlassCard className="p-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800" glowColor="rgba(99, 102, 241, 0.15)">
-                                    {submitted ? (
-                                        <div className="text-center py-12">
-                                            <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                                transition={{ type: "spring" }}
-                                                className="w-20 h-20 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
-                                            >
-                                                <CheckCircle className="w-10 h-10 text-green-600" />
-                                            </motion.div>
-                                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Message Sent!</h3>
-                                            <p className="text-slate-600 dark:text-slate-400 mb-6">
-                                                Thank you for reaching out. We'll get back to you within 24 hours.
-                                            </p>
-                                            <GradientButton onClick={() => setSubmitted(false)} variant="outline">
-                                                Send Another Message
-                                            </GradientButton>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Send us a Message</h2>
-                                            <p className="text-slate-600 dark:text-slate-400 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+                        <div className="lg:col-span-7 relative">
+                            <div className="absolute -top-32 -left-32 w-64 h-64 opacity-20 pointer-events-none hidden lg:block">
+                                <svg className="w-full h-full stroke-indigo-500" viewBox="0 0 100 100">
+                                    <motion.path
+                                        d="M0 10 Q 50 10, 50 50 T 100 90"
+                                        fill="none"
+                                        strokeWidth="0.5"
+                                        initial={{ pathLength: 0 }}
+                                        whileInView={{ pathLength: 1 }}
+                                        transition={{ duration: 3 }}
+                                    />
+                                </svg>
+                            </div>
 
-                                            <form onSubmit={handleSubmit} className="space-y-6">
-                                                <div className="grid md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Full Name <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <Input
-                                                            value={formData.name}
-                                                            onChange={(e) => handleChange('name', e.target.value)}
-                                                            placeholder="John Doe"
-                                                            className="h-12"
-                                                            required
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Email Address <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <Input
-                                                            type="email"
-                                                            value={formData.email}
-                                                            onChange={(e) => handleChange('email', e.target.value)}
-                                                            placeholder="john@example.com"
-                                                            className="h-12"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Phone Number
-                                                        </label>
-                                                        <Input
-                                                            value={formData.phone}
-                                                            onChange={(e) => handleChange('phone', e.target.value)}
-                                                            placeholder="+91 98765 43210"
-                                                            className="h-12"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Company Name
-                                                        </label>
-                                                        <Input
-                                                            value={formData.company}
-                                                            onChange={(e) => handleChange('company', e.target.value)}
-                                                            placeholder="Your Company"
-                                                            className="h-12"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Service Interested In
-                                                        </label>
-                                                        <Select
-                                                            value={formData.service_interested}
-                                                            onValueChange={(value) => handleChange('service_interested', value)}
-                                                        >
-                                                            <SelectTrigger className="h-12">
-                                                                <SelectValue placeholder="Select a service" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {services.map((service) => (
-                                                                    <SelectItem key={service} value={service}>{service}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                            Budget Range
-                                                        </label>
-                                                        <Select
-                                                            value={formData.budget}
-                                                            onValueChange={(value) => handleChange('budget', value)}
-                                                        >
-                                                            <SelectTrigger className="h-12">
-                                                                <SelectValue placeholder="Select budget" />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {budgetOptions.map((option) => (
-                                                                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                                                        Project Details <span className="text-red-500">*</span>
-                                                    </label>
-                                                    <Textarea
-                                                        value={formData.message}
-                                                        onChange={(e) => handleChange('message', e.target.value)}
-                                                        placeholder="Tell us about your project requirements..."
-                                                        rows={5}
-                                                        required
-                                                    />
-                                                </div>
-
-                                                <GradientButton
-                                                    type="submit"
-                                                    variant="primary"
-                                                    size="lg"
-                                                    className="w-full"
-                                                    disabled={createLead.isPending}
-                                                >
-                                                    {createLead.isPending ? (
-                                                        <>
-                                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                                            Sending...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Send className="w-5 h-5" />
-                                                            Send Message
-                                                        </>
-                                                    )}
-                                                </GradientButton>
-                                            </form>
-                                        </>
-                                    )}
-                                </GlassCard>
-                            </motion.div>
+                            <ContactForm
+                                preSelectedService={preSelectedService}
+                                preSelectedPlan={preSelectedPlan}
+                            />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Map Section */}
-            <section className="h-96 bg-slate-200 relative">
+            <section className="h-[500px] relative overflow-hidden mx-4 mb-4 rounded-[3rem] border border-white/5 shadow-2xl">
                 <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d241317.11609823277!2d72.74109995709657!3d19.08219783958221!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sMumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1704067200000!5m2!1sen!2sin"
                     width="100%"
                     height="100%"
-                    style={{ border: 0 }}
+                    style={{ border: 0, filter: "grayscale(1) invert(0.9) contrast(1.2)" }}
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
                     title="TechFreak Location"
                 />
+                <div className="absolute inset-0 bg-indigo-600/10 pointer-events-none" />
             </section>
-        </div>
+        </main>
     );
 }
