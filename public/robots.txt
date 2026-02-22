@@ -3,6 +3,9 @@
 
 User-agent: *
 Allow: /
+Allow: /favicon.ico
+Allow: /img/
+Allow: /manifest.json
 
 # Disallow admin pages from being crawled
 Disallow: /AdminLogin

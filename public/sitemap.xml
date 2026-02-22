@@ -3,8 +3,16 @@
   <!-- Home Page -->
   <url>
     <loc>https://techfreak.in/</loc>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-02-22</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+
+  <!-- About -->
+  <url>
+    <loc>https://techfreak.in/About</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <!-- Services Listing -->
@@ -14,6 +22,13 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- Service Details (Examples) -->
+  <url>
+    <loc>https://techfreak.in/ServiceDetail?slug=web-development</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Portfolio -->
   <url>
     <loc>https://techfreak.in/Portfolio</loc>
@@ -21,38 +36,39 @@
     <priority>0.8</priority>
   </url>
 
-  <!-- About -->
-  <url>
-    <loc>https://techfreak.in/About</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Blog -->
+  <!-- Blog Intel -->
   <url>
     <loc>https://techfreak.in/Blog</loc>
     <changefreq>daily</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
-  <!-- Contact -->
+  <!-- Contact Gateway -->
   <url>
     <loc>https://techfreak.in/Contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
-  <!-- Team -->
+  <!-- Specialized Modules -->
   <url>
     <loc>https://techfreak.in/Team</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-
-  <!-- Testimonials -->
   <url>
     <loc>https://techfreak.in/Testimonials</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://techfreak.in/privacy-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://techfreak.in/terms-of-service</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
