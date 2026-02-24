@@ -16,6 +16,8 @@ import PageHero from '../components/ui/PageHero';
 import NoiseTexture from '../components/ui/NoiseTexture';
 import Magnetic from '../components/ui/Magnetic';
 import { toast } from 'sonner';
+import SEO from '../components/SEO';
+import StructuredData, { getBlogPostData } from '../components/StructuredData';
 
 const defaultPost = {
     title: "The 2024 Digital Blueprint: Architecting High-Performance Assets",
@@ -116,7 +118,7 @@ export default function BlogPost() {
                 description={post.excerpt}
                 image={post.featured_image}
             />
-            <StructuredData data={require('../components/StructuredData').getBlogPostData(post)} />
+            <StructuredData data={getBlogPostData(post)} />
 
             <motion.div
                 className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-600 z-[100] origin-left"

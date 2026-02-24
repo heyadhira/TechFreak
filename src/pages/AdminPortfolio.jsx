@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { localClient } from '@/api/localClient';
-import { Plus, Pencil, Trash2, Loader2, Upload, X, Globe, Link as LinkIcon, Briefcase, Cpu, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, Loader2, Upload, X, Globe, Link as LinkIcon, Briefcase, Cpu, Layers, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,7 +20,8 @@ export default function AdminPortfolio() {
     const [editingProject, setEditingProject] = useState(null);
     const [formData, setFormData] = useState({
         title: '', description: '', category: 'corporate', client_name: '',
-        project_url: '', thumbnail_url: '', tech_stack: [], is_featured: false, is_active: true
+        project_url: '', thumbnail_url: '', tech_stack: [], completion_date: '',
+        is_featured: false, is_active: true
     });
     const [newTech, setNewTech] = useState('');
     const [uploading, setUploading] = useState(false);
@@ -39,6 +40,9 @@ export default function AdminPortfolio() {
             setIsOpen(false);
             resetForm();
             toast.success('Record sealed successfully');
+        },
+        onError: (err) => {
+            toast.error(`Failed to create: ${err.message}`);
         }
     });
 
@@ -49,6 +53,9 @@ export default function AdminPortfolio() {
             setIsOpen(false);
             resetForm();
             toast.success('Record verified and updated');
+        },
+        onError: (err) => {
+            toast.error(`Failed to update: ${err.message}`);
         }
     });
 
@@ -63,7 +70,8 @@ export default function AdminPortfolio() {
     const resetForm = () => {
         setFormData({
             title: '', description: '', category: 'corporate', client_name: '',
-            project_url: '', thumbnail_url: '', tech_stack: [], is_featured: false, is_active: true
+            project_url: '', thumbnail_url: '', tech_stack: [], completion_date: '',
+            is_featured: false, is_active: true
         });
         setEditingProject(null);
         setNewTech('');
@@ -79,6 +87,7 @@ export default function AdminPortfolio() {
             project_url: project.project_url || '',
             thumbnail_url: project.thumbnail_url || '',
             tech_stack: project.tech_stack || [],
+            completion_date: project.completion_date || '',
             is_featured: project.is_featured || false,
             is_active: project.is_active !== false
         });
@@ -138,13 +147,13 @@ export default function AdminPortfolio() {
                     </p>
                 </div>
                 <Dialog open={isOpen} onOpenChange={(open) => { setIsOpen(open); if (!open) resetForm(); }}>
-                    <DialogTrigger asChild>
-                        <Magnetic strength={0.2}>
+                    <Magnetic strength={0.2}>
+                        <DialogTrigger asChild>
                             <Button className="h-14 px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-indigo-600/30">
                                 <Plus className="w-4 h-4 mr-2" /> Archive New Record
                             </Button>
-                        </Magnetic>
-                    </DialogTrigger>
+                        </DialogTrigger>
+                    </Magnetic>
                     <DialogContent className="max-w-3xl bg-slate-900 border-white/5 backdrop-blur-3xl p-10 rounded-[3.5rem]">
                         <DialogHeader>
                             <DialogTitle className="text-4xl font-black text-white uppercase italic tracking-tighter">
@@ -192,6 +201,32 @@ export default function AdminPortfolio() {
                                         className="h-16 bg-slate-950/50 border-white/5 rounded-2xl px-8 text-white outline-none focus:bg-slate-950/80 transition-all"
                                         value={formData.client_name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, client_name: e.target.value }))}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Live Project URL</label>
+                                <div className="relative">
+                                    <LinkIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                    <Input
+                                        className="h-16 bg-slate-950/50 border-white/5 rounded-2xl pl-14 pr-8 text-white font-mono text-sm outline-none focus:bg-slate-950/80 transition-all"
+                                        value={formData.project_url}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, project_url: e.target.value }))}
+                                        placeholder="https://example.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-4">Completion Date</label>
+                                <div className="relative">
+                                    <CalendarDays className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                    <Input
+                                        type="date"
+                                        className="h-16 bg-slate-950/50 border-white/5 rounded-2xl pl-14 pr-8 text-white outline-none focus:bg-slate-950/80 transition-all [color-scheme:dark]"
+                                        value={formData.completion_date}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, completion_date: e.target.value }))}
                                     />
                                 </div>
                             </div>
